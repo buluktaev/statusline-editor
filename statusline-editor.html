@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statusline Editor</title>
+  <style>
+    :root {
+      --bg: #1a1a1a;
+      --bg2: #222222;
+      --bg3: #2a2a2a;
+      --bg4: #333333;
+      --border: #3a3a3a;
+      --text: #d4d4d4;
+      --text-dim: #888888;
+      --accent: #e8814d;
+      --accent-dim: #7a3f20;
+      --green: #4ec94e;
+      --yellow: #e8c44d;
+      --red: #e84d4d;
+      --font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    #app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    #header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .btn-group { display: flex; gap: 8px; }
+    .btn {
+      padding: 6px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn:hover { background: var(--bg4); border-color: var(--accent-dim); }
+    .btn-primary {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent); color: #1a1a1a; }
+
+    .preview-wrap { display: flex; flex-direction: column; gap: 4px; }
+    #preview-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    #preview {
+      padding: 14px 18px;
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      letter-spacing: 0.02em;
+    }
+
+    #editor {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+      min-height: 420px;
+    }
+
+    #blocks {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .panel-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .block-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg3);
+      border: 1px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .block-item:hover { background: var(--bg4); }
+    .block-item.active { border-color: var(--accent); background: var(--bg4); }
+    .block-item.drag-over { border-color: var(--accent); opacity: 0.7; }
+    .drag-handle {
+      color: var(--text-dim);
+      cursor: grab;
+      font-size: 14px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .block-toggle {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 10px;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .block-toggle.on { background: var(--accent); border-color: var(--accent); color: #1a1a1a; }
+    .block-name { flex: 1; font-size: 12px; }
+    .block-item.disabled .block-name { color: var(--text-dim); }
+
+    #settings {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    #settings-content { display: flex; flex-direction: column; gap: 16px; }
+    .settings-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .setting-row { display: flex; flex-direction: column; gap: 6px; }
+    .setting-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle { position: relative; width: 36px; height: 20px; cursor: pointer; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg4);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 2px;
+      top: 2px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: var(--accent); }
+    .toggle-text { font-size: 12px; }
+
+    .segment { display: flex; gap: 4px; flex-wrap: wrap; }
+    .segment-btn {
+      padding: 5px 12px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font);
+      font-size: 12px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+    }
+    .segment-btn:hover { background: var(--bg4); color: var(--text); }
+    .segment-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+    .style-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .style-card {
+      padding: 12px 8px;
+      background: var(--bg3);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+    .style-card:hover { background: var(--bg4); }
+    .style-card.active { border-color: var(--accent); background: var(--bg4); }
+    .style-card-preview { font-size: 14px; letter-spacing: 0.05em; min-height: 20px; display: flex; align-items: center; }
+    .style-card-name { font-size: 10px; color: var(--text-dim); }
+
+    .color-picker-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .color-swatch { width: 24px; height: 24px; border-radius: 4px; border: 2px solid var(--border); cursor: pointer; display: inline-block; }
+    .color-preview-row { display: flex; align-items: center; gap: 8px; }
+    .color-preview-text { font-size: 11px; color: var(--text-dim); }
+    .ansi-palette { display: none; flex-direction: column; gap: 2px; margin-top: 4px; }
+    .ansi-palette.open { display: flex; }
+    .ansi-row { display: flex; gap: 2px; }
+    .ansi-cell {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid transparent;
+      transition: border-color 0.1s, transform 0.1s;
+    }
+    .ansi-cell:hover { border-color: #fff; transform: scale(1.3); z-index: 1; position: relative; }
+    .ansi-cell.selected { border-color: #fff; }
+
+    .threshold-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--bg3); border-radius: 4px; }
+    .threshold-label { font-size: 11px; min-width: 70px; }
+
+    #output {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #output-header { display: flex; align-items: center; justify-content: space-between; }
+
+    /* Light mode preview */
+    #preview.light-mode { background: #f0ede8; }
+    #preview.light-mode .sep-span { color: #aaa !important; }
+
+    /* Theme toggle */
+    .theme-toggle { display: flex; gap: 4px; }
+    .theme-btn {
+      padding: 3px 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font);
+      font-size: 11px;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+    .theme-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+    /* Space counter */
+    .space-counter { display: flex; align-items: center; gap: 6px; }
+    .counter-btn {
+      width: 20px; height: 20px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .counter-btn:hover { background: var(--bg4); color: var(--text); }
+    .counter-val {
+      min-width: 18px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text);
+    }
+    #output-code {
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #9a9a9a;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    /* ─── Terminal Window Preview ─── */
+    .term-window {
+      background: #1e1e1e;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    .term-titlebar {
+      background: #2b2b2b;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border-bottom: 1px solid #353535;
+    }
+    .term-dots { display: flex; gap: 8px; align-items: center; }
+    .term-dot { width: 13px; height: 13px; border-radius: 50%; }
+    .dot-red    { background: #ff5f57; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green  { background: #28c841; }
+    .term-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      user-select: none;
+    }
+    .term-body { padding: 20px 24px 16px; }
+    .claude-welcome-box {
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .claude-welcome-hdr {
+      display: flex;
+      align-items: center;
+      padding: 8px 14px 0;
+      color: var(--accent);
+      font-size: 12px;
+    }
+    .claude-welcome-hdr-line { flex: 1; height: 1px; background: var(--accent); opacity: 0.5; }
+    .claude-welcome-hdr-text { padding: 0 8px; white-space: nowrap; }
+    .claude-welcome-inner {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      padding: 16px 0 12px;
+    }
+    .claude-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 24px 12px;
+      gap: 10px;
+    }
+    .claude-greeting { font-size: 14px; font-weight: 700; color: var(--text); }
+    .claude-meta { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; }
+    .claude-divider { background: #3a3a3a; width: 1px; }
+    .claude-right {
+      padding: 8px 24px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .claude-section-hdr { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+    .claude-section-body { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+    .claude-section-sep { height: 1px; background: #3a3a3a; }
+    .term-window #preview {
+      border: none;
+      border-radius: 0;
+      border-top: 1px solid #2a2a2a;
+      padding: 12px 18px;
+      background: #0d0d0d;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .term-window #preview.light-mode { background: #f0ede8; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="header">
+      <h1>⬛ Statusline Editor</h1>
+      <div class="btn-group">
+        <button class="btn" onclick="copyScript()">Copy script</button>
+        <button class="btn btn-primary" onclick="copyInstallCmd()">Copy install cmd</button>
+      </div>
+    </div>
+
+    <div class="preview-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div id="preview-label">PREVIEW</div>
+        <div class="theme-toggle">
+          <button class="theme-btn active" id="btn-dark" onclick="setTheme('dark')">🌙 Dark</button>
+          <button class="theme-btn" id="btn-light" onclick="setTheme('light')">☀️ Light</button>
+        </div>
+      </div>
+      <div class="term-window">
+        <div class="term-titlebar">
+          <div class="term-dots">
+            <div class="term-dot dot-red"></div>
+            <div class="term-dot dot-yellow"></div>
+            <div class="term-dot dot-green"></div>
+          </div>
+          <div class="term-title">* Claude Code</div>
+          <div style="width:47px"></div>
+        </div>
+        <div class="term-body">
+          <div class="claude-welcome-box">
+            <div class="claude-welcome-hdr">
+              <span class="claude-welcome-hdr-line"></span>
+              <span class="claude-welcome-hdr-text">Claude Code <span style="color:var(--text-dim)">v2.1.59</span></span>
+              <span class="claude-welcome-hdr-line"></span>
+            </div>
+            <div class="claude-welcome-inner">
+              <div class="claude-left">
+                <div class="claude-greeting">Welcome back!</div>
+                <svg width="64" height="76" viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg" fill="#e8814d">
+                  <rect x="3" y="0" width="1" height="1"/>
+                  <rect x="8" y="0" width="1" height="1"/>
+                  <rect x="2" y="1" width="8" height="5"/>
+                  <rect x="3" y="2" width="2" height="2" fill="#2a1205"/>
+                  <rect x="7" y="2" width="2" height="2" fill="#2a1205"/>
+                  <rect x="1" y="6" width="10" height="1"/>
+                  <rect x="0" y="7" width="2" height="2"/>
+                  <rect x="10" y="7" width="2" height="2"/>
+                  <rect x="3" y="7" width="6" height="3"/>
+                  <rect x="3" y="10" width="2" height="4"/>
+                  <rect x="7" y="10" width="2" height="4"/>
+                </svg>
+                <div class="claude-meta">Sonnet 4.6 · Claude Max<br>~/claude</div>
+              </div>
+              <div class="claude-divider"></div>
+              <div class="claude-right">
+                <div>
+                  <div class="claude-section-hdr">Tips for getting started</div>
+                  <div class="claude-section-body">Run /init to create a CLAUDE.md file with ins…</div>
+                </div>
+                <div class="claude-section-sep"></div>
+                <div>
+                  <div class="claude-section-hdr">Recent activity</div>
+                  <div class="claude-section-body">No recent activity</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="preview"></div>
+      </div>
+    </div>
+
+    <div id="editor">
+      <div id="blocks">
+        <div class="panel-label">Blocks</div>
+        <div id="blocks-list"></div>
+      </div>
+      <div id="settings">
+        <div id="settings-content">
+          <div style="color: var(--text-dim); font-size: 12px;">← Выберите блок для настройки</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="output">
+      <div id="output-header">
+        <div class="panel-label" style="margin:0">Output: statusline.sh</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyScript()">Copy script</button>
+          <button class="btn btn-primary" onclick="copyInstallCmd()">Copy install cmd</button>
+        </div>
+      </div>
+      <div id="output-code"></div>
+    </div>
+  </div>
+  <script>
+// ─────────────────────────────────────────
+// ANSI 256 COLOR UTILITIES
+// ─────────────────────────────────────────
+
+function ansiToCSS(n) {
+  n = parseInt(n);
+  if (n < 16) {
+    const base = [
+      '#000000','#800000','#008000','#808000',
+      '#000080','#800080','#008080','#c0c0c0',
+      '#808080','#ff0000','#00ff00','#ffff00',
+      '#0000ff','#ff00ff','#00ffff','#ffffff'
+    ];
+    return base[n];
+  }
+  if (n >= 232) {
+    const v = 8 + (n - 232) * 10;
+    return `rgb(${v},${v},${v})`;
+  }
+  const idx = n - 16;
+  const r = Math.floor(idx / 36);
+  const g = Math.floor((idx % 36) / 6);
+  const b = idx % 6;
+  return `rgb(${r?r*40+55:0},${g?g*40+55:0},${b?b*40+55:0})`;
+}
+
+function ansiEscape(n) {
+  return `\\033[38;5;${n}m`;
+}
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+
+const DEFAULTS = {
+  blocks: [
+    { id: 'model', name: 'Model', enabled: true, color: 254, sepBefore: '', sepAfter: '|', spaceBefore: 0, spaceAfter: 1 },
+    {
+      id: 'context', name: 'Context %', enabled: true, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1,
+      thresholds: [
+        { max: 50, color: 82 },
+        { max: 80, color: 226 },
+        { max: 100, color: 203 },
+      ],
+    },
+    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, color: 249, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, color: 249, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245, sepBefore: '', sepAfter: '|', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'git', name: 'Git', enabled: true, colorBranch: 254, colorClean: 247, colorDirty: 203, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 0 },
+  ]
+};
+
+let state = JSON.parse(JSON.stringify(DEFAULTS));
+let selectedBlockId = null;
+let previewTheme = 'dark';
+
+function setTheme(t) {
+  previewTheme = t;
+  const preview = document.getElementById('preview');
+  if (t === 'light') preview.classList.add('light-mode');
+  else preview.classList.remove('light-mode');
+  document.getElementById('btn-dark').classList.toggle('active', t === 'dark');
+  document.getElementById('btn-light').classList.toggle('active', t === 'light');
+}
+
+const MOCK = {
+  model: 'Sonnet 4.6',
+  contextPercent: 30,
+  rate5hPercent: 68,
+  rate5hReset: '2h 14m',
+  rateWeekPercent: 42,
+  rateWeekReset: '4d 3h',
+  inputTokens: 12400,
+  outputTokens: 3100,
+  cwd: '~/proj/app',
+  gitBranch: 'main',
+  gitStatus: 'dirty',
+  gitAdded: 2,
+  gitModified: 1,
+  gitUntracked: 0,
+};
+
+// ─────────────────────────────────────────
+// BAR STYLES
+// ─────────────────────────────────────────
+
+const BAR_STYLES = {
+  classic:  { filled: '▓', empty: '░', name: 'Классический' },
+  gradient: { filled: '█', empty: '░', name: 'Градиент' },
+  diamond:  { filled: '◆', empty: '◇', name: 'Бриллиант' },
+  dot:      { filled: '●', empty: '○', name: 'Точка' },
+  arrow:    { filled: '◀', empty: '▷', name: 'Стрелка' },
+  emoji:    { filled: '🟢', empty: '⚪', name: 'Эмодзи' },
+};
+
+function renderBar(percent, style, length) {
+  length = length || 8;
+  const cfg = BAR_STYLES[style] || BAR_STYLES.classic;
+  const filled = Math.round((percent / 100) * length);
+  const empty = length - filled;
+  let bar = '';
+
+  if (style === 'gradient') {
+    for (let i = 0; i < filled; i++) {
+      const ratio = i / length;
+      bar += ratio < 0.4 ? '█' : ratio < 0.7 ? '▓' : '▒';
+    }
+    for (let i = 0; i < empty; i++) bar += '░';
+  } else if (style === 'emoji') {
+    const fc = percent < 50 ? '🟢' : percent < 80 ? '🟡' : '🔴';
+    for (let i = 0; i < filled; i++) bar += fc;
+    for (let i = 0; i < empty; i++) bar += '⚪';
+  } else {
+    for (let i = 0; i < filled; i++) bar += cfg.filled;
+    for (let i = 0; i < empty; i++) bar += cfg.empty;
+  }
+  return bar;
+}
+
+// ─────────────────────────────────────────
+// PREVIEW RENDERER
+// ─────────────────────────────────────────
+
+function getContextColor(percent) {
+  const block = state.blocks.find(b => b.id === 'context');
+  if (!block) return '#4ec94e';
+  for (const t of block.thresholds) {
+    if (percent <= t.max) return ansiToCSS(t.color);
+  }
+  return ansiToCSS(block.thresholds[block.thresholds.length - 1].color);
+}
+
+function formatTokens(n, fmt) {
+  if (fmt === '1000') return n.toString();
+  if (fmt === '1.2k') return (n / 1000).toFixed(1) + 'k';
+  return Math.floor(n / 1000) + 'k';
+}
+
+// Colored bar for preview (filled portion changes color by percent)
+function renderColoredBar(percent, style, length) {
+  length = length || 8;
+  const filled = Math.round((percent / 100) * length);
+  const empty = length - filled;
+  const fillColor = percent < 50 ? '#4ec94e' : percent < 80 ? '#e8c44d' : '#e84d4d';
+  const emptyColor = previewTheme === 'light' ? '#bbb' : '#444';
+
+  if (style === 'emoji') {
+    const fc = percent < 50 ? '🟢' : percent < 80 ? '🟡' : '🔴';
+    return (fc.repeat(filled)) + ('⚪'.repeat(empty));
+  }
+
+  const cfg = BAR_STYLES[style] || BAR_STYLES.classic;
+  let filledStr = '';
+  if (style === 'gradient') {
+    for (let i = 0; i < filled; i++) {
+      const r = i / length;
+      filledStr += r < 0.4 ? '█' : r < 0.7 ? '▓' : '▒';
+    }
+  } else {
+    filledStr = cfg.filled.repeat(filled);
+  }
+  const emptyStr = cfg.empty.repeat(empty);
+
+  return (filledStr ? `<span style="color:${fillColor}">${filledStr}</span>` : '')
+       + (emptyStr  ? `<span style="color:${emptyColor}">${emptyStr}</span>` : '');
+}
+
+function renderPreview() {
+  const preview = document.getElementById('preview');
+  const parts = [];
+
+  const isDark = previewTheme === 'dark';
+  const sepColor = isDark ? '#555' : '#aaa';
+  const sep = (ch) => ch ? `<span style="color:${sepColor}"> ${ch} </span>` : '';
+  const spaces = (n) => n > 0 ? '&nbsp;'.repeat(n) : '';
+
+  for (const block of state.blocks) {
+    if (!block.enabled) continue;
+
+    if (block.spaceBefore > 0) parts.push(spaces(block.spaceBefore));
+    if (block.sepBefore) parts.push(sep(block.sepBefore));
+
+    switch (block.id) {
+      case 'model':
+        parts.push(`<span style="color:${ansiToCSS(block.color)}">[${MOCK.model}]</span>`);
+        break;
+      case 'context':
+        parts.push(`<span style="color:${getContextColor(MOCK.contextPercent)}">${MOCK.contextPercent}%</span>`);
+        break;
+      case 'rate5h': {
+        const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8);
+        const pctColor = MOCK.rate5hPercent < 50 ? '#4ec94e' : MOCK.rate5hPercent < 80 ? '#e8c44d' : '#e84d4d';
+        let s = `${bar}<span style="color:${pctColor}"> ${MOCK.rate5hPercent}%</span>`;
+        if (block.showReset) s += ` <span style="color:${sepColor}">${MOCK.rate5hReset}</span>`;
+        parts.push(s);
+        break;
+      }
+      case 'rateWeek': {
+        const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8);
+        const pctColor = MOCK.rateWeekPercent < 50 ? '#4ec94e' : MOCK.rateWeekPercent < 80 ? '#e8c44d' : '#e84d4d';
+        let s = `${bar}<span style="color:${pctColor}"> ${MOCK.rateWeekPercent}%</span>`;
+        if (block.showReset) s += ` <span style="color:${sepColor}">${MOCK.rateWeekReset}</span>`;
+        parts.push(s);
+        break;
+      }
+      case 'tokens':
+        parts.push(`<span style="color:${ansiToCSS(block.color)}">↑${formatTokens(MOCK.inputTokens, block.format)} ↓${formatTokens(MOCK.outputTokens, block.format)}</span>`);
+        break;
+      case 'directory':
+        parts.push(`<span style="color:${ansiToCSS(block.color)}">${MOCK.cwd}</span>`);
+        break;
+      case 'git': {
+        const branchColor = ansiToCSS(block.colorBranch);
+        const statusColor = MOCK.gitStatus === 'clean' ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
+        parts.push(`<span style="color:${branchColor}">(${MOCK.gitBranch})</span> <span style="color:${statusColor}">${MOCK.gitStatus === 'clean' ? '✓' : '✗'}</span>`);
+        break;
+      }
+    }
+
+    if (block.sepAfter) parts.push(sep(block.sepAfter));
+    if (block.spaceAfter > 0) parts.push(spaces(block.spaceAfter));
+  }
+
+  preview.innerHTML = parts.join('');
+}
+
+// ─────────────────────────────────────────
+// RENDER (будет дополнен в Task 3-6)
+// ─────────────────────────────────────────
+
+// ─────────────────────────────────────────
+// BLOCKS PANEL
+// ─────────────────────────────────────────
+
+let dragSrcIdx = null;
+
+function renderBlocks() {
+  const list = document.getElementById('blocks-list');
+  list.innerHTML = '';
+
+  state.blocks.forEach((block, idx) => {
+    const item = document.createElement('div');
+    item.className = 'block-item' +
+      (block.id === selectedBlockId ? ' active' : '') +
+      (!block.enabled ? ' disabled' : '');
+    item.draggable = true;
+    item.dataset.idx = idx;
+
+    item.innerHTML = `
+      <span class="drag-handle" title="Перетащить">⠿</span>
+      <span class="block-toggle ${block.enabled ? 'on' : ''}" data-id="${block.id}">
+        ${block.enabled ? '✓' : ''}
+      </span>
+      <span class="block-name">${block.name}</span>
+    `;
+
+    // Клик по элементу — выбор для настройки
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('block-toggle')) return;
+      selectedBlockId = block.id;
+      render();
+    });
+
+    // Клик по toggle — вкл/выкл
+    item.querySelector('.block-toggle').addEventListener('click', (e) => {
+      e.stopPropagation();
+      block.enabled = !block.enabled;
+      render();
+    });
+
+    // Drag & Drop
+    item.addEventListener('dragstart', (e) => {
+      dragSrcIdx = idx;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => item.style.opacity = '0.5', 0);
+    });
+    item.addEventListener('dragend', () => {
+      item.style.opacity = '';
+      document.querySelectorAll('.block-item').forEach(el => el.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.block-item').forEach(el => el.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      const moved = state.blocks.splice(dragSrcIdx, 1)[0];
+      state.blocks.splice(idx, 0, moved);
+      dragSrcIdx = null;
+      render();
+    });
+
+    list.appendChild(item);
+  });
+}
+// ─────────────────────────────────────────
+// ANSI COLOR PICKER
+// ─────────────────────────────────────────
+
+function buildAnsiPalette(currentCode, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'color-picker-wrap';
+
+  const previewRow = document.createElement('div');
+  previewRow.className = 'color-preview-row';
+
+  const swatch = document.createElement('div');
+  swatch.className = 'color-swatch';
+  swatch.style.background = ansiToCSS(currentCode);
+  swatch.title = 'Нажмите чтобы открыть/закрыть палитру';
+
+  const label = document.createElement('span');
+  label.className = 'color-preview-text';
+  label.textContent = `ANSI ${currentCode}`;
+
+  previewRow.appendChild(swatch);
+  previewRow.appendChild(label);
+  wrap.appendChild(previewRow);
+
+  const palette = document.createElement('div');
+  palette.className = 'ansi-palette';
+
+  function makeCell(code) {
+    const cell = document.createElement('div');
+    cell.className = 'ansi-cell' + (code === currentCode ? ' selected' : '');
+    cell.style.background = ansiToCSS(code);
+    cell.title = `ANSI ${code}`;
+    cell.addEventListener('click', () => {
+      onChange(code);
+      palette.classList.remove('open');
+    });
+    return cell;
+  }
+
+  // Base 16 colors (2 rows of 8)
+  const row1 = document.createElement('div'); row1.className = 'ansi-row';
+  const row2 = document.createElement('div'); row2.className = 'ansi-row';
+  for (let i = 0; i < 8; i++) row1.appendChild(makeCell(i));
+  for (let i = 8; i < 16; i++) row2.appendChild(makeCell(i));
+  palette.appendChild(row1);
+  palette.appendChild(row2);
+
+  // Spacer
+  const s1 = document.createElement('div'); s1.style.height = '4px';
+  palette.appendChild(s1);
+
+  // 216 color cube
+  for (let r = 0; r < 6; r++) {
+    const row = document.createElement('div');
+    row.className = 'ansi-row';
+    for (let g = 0; g < 6; g++) {
+      for (let b = 0; b < 6; b++) {
+        row.appendChild(makeCell(16 + r * 36 + g * 6 + b));
+      }
+    }
+    palette.appendChild(row);
+  }
+
+  // Spacer
+  const s2 = document.createElement('div'); s2.style.height = '4px';
+  palette.appendChild(s2);
+
+  // Grayscale
+  const grayRow = document.createElement('div'); grayRow.className = 'ansi-row';
+  for (let i = 232; i < 256; i++) grayRow.appendChild(makeCell(i));
+  palette.appendChild(grayRow);
+
+  wrap.appendChild(palette);
+  swatch.addEventListener('click', () => palette.classList.toggle('open'));
+  return wrap;
+}
+
+function buildToggle(checked, label, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'toggle-wrap';
+  wrap.innerHTML = `
+    <label class="toggle">
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <span class="toggle-slider"></span>
+    </label>
+    <span class="toggle-text">${label}</span>
+  `;
+  wrap.querySelector('input').addEventListener('change', (e) => onChange(e.target.checked));
+  return wrap;
+}
+
+function buildSegment(options, current, onChange) {
+  const seg = document.createElement('div');
+  seg.className = 'segment';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'segment-btn' + (opt.value == current ? ' active' : '');
+    btn.textContent = opt.label;
+    btn.addEventListener('click', () => onChange(opt.value));
+    seg.appendChild(btn);
+  });
+  return seg;
+}
+
+function buildRow(label, content) {
+  const row = document.createElement('div');
+  row.className = 'setting-row';
+  const lbl = document.createElement('div');
+  lbl.className = 'setting-label';
+  lbl.textContent = label;
+  row.appendChild(lbl);
+  row.appendChild(content);
+  return row;
+}
+
+// ─────────────────────────────────────────
+// SETTINGS PANEL
+// ─────────────────────────────────────────
+
+function renderSettings() {
+  const content = document.getElementById('settings-content');
+  if (!content) return;
+  const block = state.blocks.find(b => b.id === selectedBlockId);
+
+  if (!block) {
+    content.innerHTML = '<div style="color: var(--text-dim); font-size: 12px;">← Выберите блок для настройки</div>';
+    return;
+  }
+
+  content.innerHTML = `<div class="settings-title">${block.name}</div>`;
+
+  switch (block.id) {
+    case 'model':      renderModelSettings(content, block); break;
+    case 'context':    renderContextSettings(content, block); break;
+    case 'rate5h':
+    case 'rateWeek':   renderRateSettings(content, block); break;
+    case 'tokens':     renderTokensSettings(content, block); break;
+    case 'directory':  renderDirectorySettings(content, block); break;
+    case 'git':        renderGitSettings(content, block); break;
+  }
+}
+
+const SEP_OPTIONS = [{value:'|',label:'|'},{value:'·',label:'·'},{value:'—',label:'—'},{value:'',label:'нет'}];
+
+function buildCounter(value, min, max, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'space-counter';
+  const minus = document.createElement('button');
+  minus.className = 'counter-btn';
+  minus.textContent = '−';
+  const val = document.createElement('span');
+  val.className = 'counter-val';
+  val.textContent = value;
+  const plus = document.createElement('button');
+  plus.className = 'counter-btn';
+  plus.textContent = '+';
+  minus.addEventListener('click', () => {
+    if (value > min) { value--; val.textContent = value; onChange(value); }
+  });
+  plus.addEventListener('click', () => {
+    if (value < max) { value++; val.textContent = value; onChange(value); }
+  });
+  wrap.appendChild(minus);
+  wrap.appendChild(val);
+  wrap.appendChild(plus);
+  return wrap;
+}
+
+function buildSepRows(el, block) {
+  el.appendChild(buildRow('Разделитель до',
+    buildSegment(SEP_OPTIONS, block.sepBefore, v => { block.sepBefore = v; render(); })
+  ));
+  el.appendChild(buildRow('Разделитель после',
+    buildSegment(SEP_OPTIONS, block.sepAfter, v => { block.sepAfter = v; render(); })
+  ));
+  el.appendChild(buildRow('Пробелы до',
+    buildCounter(block.spaceBefore ?? 0, 0, 4, v => { block.spaceBefore = v; render(); })
+  ));
+  el.appendChild(buildRow('Пробелы после',
+    buildCounter(block.spaceAfter ?? 0, 0, 4, v => { block.spaceAfter = v; render(); })
+  ));
+}
+
+function renderModelSettings(el, block) {
+  el.appendChild(buildRow('Цвет текста',
+    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+  ));
+  buildSepRows(el, block);
+}
+
+function renderContextSettings(el, block) {
+  el.appendChild(buildRow('Показывать',
+    buildToggle(block.enabled, 'Контекст %', v => { block.enabled = v; render(); })
+  ));
+
+  const section = document.createElement('div');
+  section.className = 'setting-row';
+  const sectionLabel = document.createElement('div');
+  sectionLabel.className = 'setting-label';
+  sectionLabel.textContent = 'Цвета по порогам';
+  section.appendChild(sectionLabel);
+
+  const labels = ['0 – 49%', '50 – 79%', '80 – 100%'];
+  block.thresholds.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'threshold-row';
+    const lbl = document.createElement('span');
+    lbl.className = 'threshold-label';
+    lbl.textContent = labels[i];
+    row.appendChild(lbl);
+    row.appendChild(buildAnsiPalette(t.color, v => { t.color = v; render(); }));
+    section.appendChild(row);
+  });
+  el.appendChild(section);
+  buildSepRows(el, block);
+}
+
+function renderRateSettings(el, block) {
+  el.appendChild(buildRow('Показывать',
+    buildToggle(block.enabled, block.name, v => { block.enabled = v; render(); })
+  ));
+
+  const cardsRow = document.createElement('div');
+  cardsRow.className = 'setting-row';
+  const cardsLabel = document.createElement('div');
+  cardsLabel.className = 'setting-label';
+  cardsLabel.textContent = 'Стиль шкалы';
+  cardsRow.appendChild(cardsLabel);
+
+  const cards = document.createElement('div');
+  cards.className = 'style-cards';
+  Object.entries(BAR_STYLES).forEach(([key, cfg]) => {
+    const card = document.createElement('div');
+    card.className = 'style-card' + (block.style === key ? ' active' : '');
+    const preview = renderBar(60, key, 6);
+    card.innerHTML = `<div class="style-card-preview">${preview}</div><div class="style-card-name">${cfg.name}</div>`;
+    card.addEventListener('click', () => { block.style = key; render(); });
+    cards.appendChild(card);
+  });
+  cardsRow.appendChild(cards);
+  el.appendChild(cardsRow);
+
+  el.appendChild(buildRow('Показывать "до сброса"',
+    buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render(); })
+  ));
+
+  el.appendChild(buildRow('Цвет шкалы',
+    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+  ));
+  buildSepRows(el, block);
+}
+
+function renderTokensSettings(el, block) {
+  el.appendChild(buildRow('Показывать',
+    buildToggle(block.enabled, 'Токены', v => { block.enabled = v; render(); })
+  ));
+  el.appendChild(buildRow('Формат числа',
+    buildSegment(
+      [{value:'1k',label:'12k'},{value:'1.2k',label:'12.4k'},{value:'1000',label:'12400'}],
+      block.format,
+      v => { block.format = v; render(); }
+    )
+  ));
+  el.appendChild(buildRow('Цвет',
+    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+  ));
+  buildSepRows(el, block);
+}
+
+function renderDirectorySettings(el, block) {
+  el.appendChild(buildRow('Показывать',
+    buildToggle(block.enabled, 'Директория', v => { block.enabled = v; render(); })
+  ));
+  el.appendChild(buildRow('Глубина пути',
+    buildSegment(
+      [{value:1,label:'app'},{value:2,label:'proj/app'},{value:0,label:'полный'}],
+      block.depth,
+      v => { block.depth = parseInt(v); render(); }
+    )
+  ));
+  el.appendChild(buildRow('Цвет',
+    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+  ));
+  buildSepRows(el, block);
+}
+
+function renderGitSettings(el, block) {
+  el.appendChild(buildRow('Показывать',
+    buildToggle(block.enabled, 'Git', v => { block.enabled = v; render(); })
+  ));
+  el.appendChild(buildRow('Цвет ветки',
+    buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render(); })
+  ));
+  el.appendChild(buildRow('Цвет clean ✓',
+    buildAnsiPalette(block.colorClean, v => { block.colorClean = v; render(); })
+  ));
+  el.appendChild(buildRow('Цвет dirty ✗',
+    buildAnsiPalette(block.colorDirty, v => { block.colorDirty = v; render(); })
+  ));
+  buildSepRows(el, block);
+}
+function renderOutput() {
+  const el = document.getElementById('output-code');
+  if (el) el.textContent = generateScript();
+}
+
+function render() {
+  renderPreview();
+  renderBlocks();
+  renderSettings();
+  renderOutput();
+}
+
+function copyScript() {
+  navigator.clipboard.writeText(generateScript()).then(() => {
+    document.querySelectorAll('.btn').forEach(b => {
+      if (b.textContent === 'Copy script') {
+        b.textContent = '✓ Copied!';
+        setTimeout(() => b.textContent = 'Copy script', 1500);
+      }
+    });
+  });
+}
+
+function copyInstallCmd() {
+  const script = generateScript();
+  const b64 = btoa(unescape(encodeURIComponent(script)));
+  const cmd = `mkdir -p ~/.claude && echo '${b64}' | base64 -d > ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh && echo '✓ Done'`;
+  navigator.clipboard.writeText(cmd).then(() => {
+    document.querySelectorAll('.btn-primary').forEach(b => {
+      if (b.textContent === 'Copy install cmd') {
+        b.textContent = '✓ Copied!';
+        setTimeout(() => b.textContent = 'Copy install cmd', 2000);
+      }
+    });
+  });
+}
+
+// ─────────────────────────────────────────
+// SCRIPT GENERATOR
+// ─────────────────────────────────────────
+
+function generateScript() {
+  const lines = [];
+  lines.push('#!/bin/bash');
+  lines.push('# Statusline — generated by statusline-editor.html');
+  lines.push('');
+  lines.push('JSON_INPUT=$(cat)');
+  lines.push('');
+  lines.push('model=$(echo "$JSON_INPUT" | jq -r \'.model.display_name // "Claude"\' | sed \'s/^Claude //\')');
+  lines.push('input=$(echo "$JSON_INPUT" | jq -r \'.context_window.total_input_tokens // 0\')');
+  lines.push('output=$(echo "$JSON_INPUT" | jq -r \'.context_window.total_output_tokens // 0\')');
+  lines.push('percent=$(echo "$JSON_INPUT" | jq -r \'.context_window.used_percentage // 0\')');
+  lines.push('cwd=$(echo "$JSON_INPUT" | jq -r \'.cwd // (.workspace.current_dir // "")\')');
+  lines.push('');
+  lines.push('RESET="\\033[0m"');
+
+  state.blocks.forEach(block => {
+    if (!block.enabled) return;
+    switch (block.id) {
+      case 'model':
+        lines.push(`MODEL_COLOR="\\033[38;5;${block.color}m"`);
+        break;
+      case 'context':
+        lines.push(`CTX_LOW="\\033[38;5;${block.thresholds[0].color}m"`);
+        lines.push(`CTX_MID="\\033[38;5;${block.thresholds[1].color}m"`);
+        lines.push(`CTX_HIGH="\\033[38;5;${block.thresholds[2].color}m"`);
+        break;
+      case 'rate5h':
+        lines.push(`RATE5H_COLOR="\\033[38;5;${block.color}m"`);
+        break;
+      case 'rateWeek':
+        lines.push(`RATEWEEK_COLOR="\\033[38;5;${block.color}m"`);
+        break;
+      case 'tokens':
+        lines.push(`TOKEN_COLOR="\\033[38;5;${block.color}m"`);
+        break;
+      case 'directory':
+        lines.push(`DIR_COLOR="\\033[38;5;${block.color}m"`);
+        break;
+      case 'git':
+        lines.push(`GIT_COLOR="\\033[38;5;${block.colorBranch}m"`);
+        lines.push(`GIT_CLEAN="\\033[38;5;${block.colorClean}m"`);
+        lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
+        break;
+    }
+  });
+
+  lines.push('');
+
+  // Bar function if rate blocks enabled
+  const hasRate = state.blocks.some(b => (b.id === 'rate5h' || b.id === 'rateWeek') && b.enabled);
+  if (hasRate) {
+    const rateBlock = state.blocks.find(b => (b.id === 'rate5h' || b.id === 'rateWeek') && b.enabled);
+    const style = rateBlock ? rateBlock.style : 'classic';
+    if (style === 'emoji') {
+      lines.push('get_rate_bar() {');
+      lines.push('  local p=$1 len=${2:-8} bar=""');
+      lines.push('  local filled=$(( p * len / 100 ))');
+      lines.push('  local empty=$(( len - filled ))');
+      lines.push('  local fc; if (( p < 50 )); then fc="🟢"; elif (( p < 80 )); then fc="🟡"; else fc="🔴"; fi');
+      lines.push('  for ((i=0;i<filled;i++)); do bar+="$fc"; done');
+      lines.push('  for ((i=0;i<empty;i++)); do bar+="⚪"; done');
+      lines.push('  echo "$bar"');
+      lines.push('}');
+    } else if (style === 'gradient') {
+      lines.push('get_rate_bar() {');
+      lines.push('  local p=$1 len=${2:-8} bar=""');
+      lines.push('  local filled=$(( p * len / 100 ))');
+      lines.push('  local empty=$(( len - filled ))');
+      lines.push('  for ((i=0;i<filled;i++)); do');
+      lines.push('    local ratio=$(( i * 10 / len ))');
+      lines.push('    if (( ratio < 4 )); then bar+="█"; elif (( ratio < 7 )); then bar+="▓"; else bar+="▒"; fi');
+      lines.push('  done');
+      lines.push('  for ((i=0;i<empty;i++)); do bar+="░"; done');
+      lines.push('  echo "$bar"');
+      lines.push('}');
+    } else {
+      const cfg = BAR_STYLES[style] || BAR_STYLES.classic;
+      lines.push(`RATE_FILLED="${cfg.filled}"`);
+      lines.push(`RATE_EMPTY="${cfg.empty}"`);
+      lines.push('get_rate_bar() {');
+      lines.push('  local p=$1 len=${2:-8} bar=""');
+      lines.push('  local filled=$(( p * len / 100 ))');
+      lines.push('  local empty=$(( len - filled ))');
+      lines.push('  for ((i=0;i<filled;i++)); do bar+="${RATE_FILLED}"; done');
+      lines.push('  for ((i=0;i<empty;i++)); do bar+="${RATE_EMPTY}"; done');
+      lines.push('  echo "$bar"');
+      lines.push('}');
+    }
+    lines.push('');
+  }
+
+  // Directory function
+  const dirBlock = state.blocks.find(b => b.id === 'directory' && b.enabled);
+  lines.push('get_directory() {');
+  if (dirBlock && dirBlock.depth === 0) {
+    lines.push('  echo "$1"');
+  } else if (dirBlock && dirBlock.depth === 1) {
+    lines.push('  echo "$(basename "$1")"');
+  } else {
+    lines.push('  local parent=$(basename "$(dirname "$1")")');
+    lines.push('  local current=$(basename "$1")');
+    lines.push('  if [[ "$parent" == "/" || -z "$parent" ]]; then echo "~/${current}"; else echo "~/${parent}/${current}"; fi');
+  }
+  lines.push('}');
+  lines.push('');
+
+  // Git helpers
+  const gitBlock = state.blocks.find(b => b.id === 'git' && b.enabled);
+  if (gitBlock) {
+    lines.push('get_git_branch() { git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null; }');
+    lines.push('get_git_status() {');
+    lines.push('  git -C "$1" diff --quiet 2>/dev/null && git -C "$1" diff --cached --quiet 2>/dev/null && echo clean || echo dirty');
+    lines.push('}');
+    lines.push('');
+  }
+
+  // Token format
+  const tokBlock = state.blocks.find(b => b.id === 'tokens' && b.enabled);
+  if (tokBlock) {
+    if (tokBlock.format === '1000') {
+      lines.push('format_tokens() { echo "$1"; }');
+    } else if (tokBlock.format === '1.2k') {
+      lines.push('format_tokens() { printf "%.1fk" "$(echo "scale=1; $1/1000" | bc)"; }');
+    } else {
+      lines.push('format_tokens() { echo $(($1 / 1000)); }');
+    }
+    lines.push('');
+  }
+
+  // Context color
+  const ctxBlock = state.blocks.find(b => b.id === 'context' && b.enabled);
+  if (ctxBlock) {
+    lines.push('get_ctx_color() {');
+    lines.push('  local p=$1');
+    lines.push(`  if (( p < ${ctxBlock.thresholds[1].max} )); then echo -e "$CTX_LOW"`);
+    lines.push(`  elif (( p < ${ctxBlock.thresholds[2].max} )); then echo -e "$CTX_MID"`);
+    lines.push('  else echo -e "$CTX_HIGH"');
+    lines.push('  fi');
+    lines.push('}');
+    lines.push('');
+  }
+
+  // Compute values
+  lines.push('# ── Compute values ──');
+  lines.push('directory=$(get_directory "$cwd")');
+  if (tokBlock) {
+    lines.push('input_k=$(format_tokens "$input")');
+    lines.push('output_k=$(format_tokens "$output")');
+  }
+  if (ctxBlock) {
+    lines.push('ctx_color=$(get_ctx_color "$percent")');
+  }
+  lines.push('');
+
+  // Print statusline
+  lines.push('# ── Print statusline ──');
+  for (const block of state.blocks) {
+    if (!block.enabled) continue;
+    if (block.spaceBefore > 0) lines.push(`printf "${' '.repeat(block.spaceBefore)}"`);
+    if (block.sepBefore) lines.push(`printf " ${block.sepBefore} "`);
+    switch (block.id) {
+      case 'model':
+        lines.push(`printf "\${MODEL_COLOR}[%s]\${RESET} " "$model"`);
+        break;
+      case 'context':
+        lines.push(`printf "\${ctx_color}%s%%\${RESET} " "$percent"`);
+        break;
+      case 'rate5h':
+        lines.push('# rate5h: requires rate limit data in JSON input');
+        lines.push('# rate5h_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_pct // 0\')');
+        if (block.showReset) {
+          lines.push('# rate5h_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_reset // ""\')');
+          lines.push('# printf "${RATE5H_COLOR}%s %s%%" "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"');
+          lines.push('# [[ -n "$rate5h_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate5h_reset"');
+          lines.push('# printf " ${RESET}"');
+        } else {
+          lines.push('# printf "${RATE5H_COLOR}%s %s%%${RESET} " "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"');
+        }
+        break;
+      case 'rateWeek':
+        lines.push('# rateWeek: requires rate limit data in JSON input');
+        lines.push('# rate_week_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_pct // 0\')');
+        if (block.showReset) {
+          lines.push('# rate_week_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_reset // ""\')');
+          lines.push('# printf "${RATEWEEK_COLOR}%s %s%%" "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"');
+          lines.push('# [[ -n "$rate_week_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate_week_reset"');
+          lines.push('# printf " ${RESET}"');
+        } else {
+          lines.push('# printf "${RATEWEEK_COLOR}%s %s%%${RESET} " "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"');
+        }
+        break;
+      case 'tokens':
+        lines.push(`printf "\${TOKEN_COLOR}↑%s ↓%s\${RESET} " "$input_k" "$output_k"`);
+        break;
+      case 'directory':
+        lines.push(`printf "\${DIR_COLOR}%s\${RESET}" "$directory"`);
+        break;
+      case 'git':
+        lines.push('if [[ -n "$cwd" ]]; then');
+        lines.push('  git_branch=$(get_git_branch "$cwd")');
+        lines.push('  if [[ -n "$git_branch" ]]; then');
+        lines.push('    git_status=$(get_git_status "$cwd")');
+        lines.push('    printf " \${GIT_COLOR}(%s)\${RESET}" "$git_branch"');
+        lines.push('    if [[ "$git_status" == "clean" ]]; then');
+        lines.push('      printf " \${GIT_CLEAN}✓\${RESET}"');
+        lines.push('    else');
+        lines.push('      printf " \${GIT_DIRTY}✗\${RESET}"');
+        lines.push('    fi');
+        lines.push('  fi');
+        lines.push('fi');
+        break;
+    }
+    if (block.sepAfter) lines.push(`printf " ${block.sepAfter} "`);
+    if (block.spaceAfter > 0) lines.push(`printf "${' '.repeat(block.spaceAfter)}"`);
+  }
+
+  lines.push('');
+  return lines.join('\n');
+}
+
+render();
+  </script>
+</body>
+</html>
