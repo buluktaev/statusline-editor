@@ -401,14 +401,25 @@
     .term-window #preview {
       border: none;
       border-radius: 0;
-      border-top: 1px solid #2a2a2a;
       padding: 12px 18px;
-      background: #0d0d0d;
+      background: #1e1e1e;
       min-height: 44px;
       display: flex;
       align-items: center;
     }
-    .term-window #preview.light-mode { background: #f0ede8; }
+
+    /* Light theme for entire terminal */
+    .term-window.light-mode { background: #f0ede8; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.08); }
+    .term-window.light-mode .term-titlebar { background: #e0ddd8; border-bottom-color: #ccc; }
+    .term-window.light-mode .term-title { color: #666; }
+    .term-window.light-mode .term-body { background: #f0ede8; }
+    .term-window.light-mode .claude-welcome-box { border-color: var(--accent); }
+    .term-window.light-mode .claude-greeting { color: #222; }
+    .term-window.light-mode .claude-meta { color: #666; }
+    .term-window.light-mode .claude-section-body { color: #666; }
+    .term-window.light-mode .claude-divider { background: #ccc; }
+    .term-window.light-mode .claude-section-sep { background: #ccc; }
+    .term-window.light-mode #preview { background: #f0ede8; }
   </style>
 </head>
 <body>
@@ -552,8 +563,8 @@ const DEFAULTS = {
         { max: 100, color: 203 },
       ],
     },
-    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, color: 249, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
-    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, color: 249, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, color: 249, colorReset: 238, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, color: 249, colorReset: 238, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
     { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245, sepBefore: '', sepAfter: '|', spaceBefore: 0, spaceAfter: 1 },
     { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
     { id: 'git', name: 'Git', enabled: true, colorBranch: 254, colorClean: 247, colorDirty: 203, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 0 },
@@ -566,9 +577,9 @@ let previewTheme = 'dark';
 
 function setTheme(t) {
   previewTheme = t;
-  const preview = document.getElementById('preview');
-  if (t === 'light') preview.classList.add('light-mode');
-  else preview.classList.remove('light-mode');
+  const termWindow = document.querySelector('.term-window');
+  if (t === 'light') termWindow.classList.add('light-mode');
+  else termWindow.classList.remove('light-mode');
   document.getElementById('btn-dark').classList.toggle('active', t === 'dark');
   document.getElementById('btn-light').classList.toggle('active', t === 'light');
 }
@@ -647,11 +658,11 @@ function formatTokens(n, fmt) {
 }
 
 // Colored bar for preview (filled portion changes color by percent)
-function renderColoredBar(percent, style, length) {
+function renderColoredBar(percent, style, length, fillColorOverride) {
   length = length || 8;
   const filled = Math.round((percent / 100) * length);
   const empty = length - filled;
-  const fillColor = percent < 50 ? '#4ec94e' : percent < 80 ? '#e8c44d' : '#e84d4d';
+  const fillColor = fillColorOverride || (percent < 50 ? '#4ec94e' : percent < 80 ? '#e8c44d' : '#e84d4d');
   const emptyColor = previewTheme === 'light' ? '#bbb' : '#444';
 
   if (style === 'emoji') {
@@ -698,18 +709,18 @@ function renderPreview() {
         parts.push(`<span style="color:${getContextColor(MOCK.contextPercent)}">${MOCK.contextPercent}%</span>`);
         break;
       case 'rate5h': {
-        const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8);
-        const pctColor = MOCK.rate5hPercent < 50 ? '#4ec94e' : MOCK.rate5hPercent < 80 ? '#e8c44d' : '#e84d4d';
-        let s = `${bar}<span style="color:${pctColor}"> ${MOCK.rate5hPercent}%</span>`;
-        if (block.showReset) s += ` <span style="color:${sepColor}">${MOCK.rate5hReset}</span>`;
+        const rateColor = ansiToCSS(block.color);
+        const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8, rateColor);
+        let s = `${bar}<span style="color:${rateColor}"> ${MOCK.rate5hPercent}%</span>`;
+        if (block.showReset) s += ` <span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rate5hReset}</span>`;
         parts.push(s);
         break;
       }
       case 'rateWeek': {
-        const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8);
-        const pctColor = MOCK.rateWeekPercent < 50 ? '#4ec94e' : MOCK.rateWeekPercent < 80 ? '#e8c44d' : '#e84d4d';
-        let s = `${bar}<span style="color:${pctColor}"> ${MOCK.rateWeekPercent}%</span>`;
-        if (block.showReset) s += ` <span style="color:${sepColor}">${MOCK.rateWeekReset}</span>`;
+        const rateColor = ansiToCSS(block.color);
+        const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8, rateColor);
+        let s = `${bar}<span style="color:${rateColor}"> ${MOCK.rateWeekPercent}%</span>`;
+        if (block.showReset) s += ` <span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rateWeekReset}</span>`;
         parts.push(s);
         break;
       }
@@ -1050,13 +1061,18 @@ function renderRateSettings(el, block) {
   cardsRow.appendChild(cards);
   el.appendChild(cardsRow);
 
-  el.appendChild(buildRow('Показывать "до сброса"',
-    buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render(); })
-  ));
-
   el.appendChild(buildRow('Цвет шкалы',
     buildAnsiPalette(block.color, v => { block.color = v; render(); })
   ));
+
+  el.appendChild(buildRow('Показывать "до сброса"',
+    buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render(); })
+  ));
+  if (block.showReset) {
+    el.appendChild(buildRow('Цвет таймера',
+      buildAnsiPalette(block.colorReset ?? 238, v => { block.colorReset = v; render(); })
+    ));
+  }
   buildSepRows(el, block);
 }
 
