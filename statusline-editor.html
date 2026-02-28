@@ -554,20 +554,20 @@ function ansiEscape(n) {
 
 const DEFAULTS = {
   blocks: [
-    { id: 'model', name: 'Model', enabled: true, color: 254, sepBefore: '', sepAfter: '|', spaceBefore: 0, spaceAfter: 1 },
+    { id: 'model', name: 'Model', enabled: true, color: 254, sepBefore: '', sepAfter: '|' },
     {
-      id: 'context', name: 'Context %', enabled: true, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1,
+      id: 'context', name: 'Context %', enabled: true, sepBefore: '', sepAfter: '',
       thresholds: [
         { max: 50, color: 82 },
         { max: 80, color: 226 },
         { max: 100, color: 203 },
       ],
     },
-    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, color: 249, colorReset: 238, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
-    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, color: 249, colorReset: 238, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
-    { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245, sepBefore: '', sepAfter: '|', spaceBefore: 0, spaceAfter: 1 },
-    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 1 },
-    { id: 'git', name: 'Git', enabled: true, colorBranch: 254, colorClean: 247, colorDirty: 203, sepBefore: '', sepAfter: '', spaceBefore: 0, spaceAfter: 0 },
+    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, color: 249, colorReset: 238, sepBefore: '', sepAfter: '' },
+    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, color: 249, colorReset: 238, sepBefore: '', sepAfter: '' },
+    { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245, sepBefore: '', sepAfter: '|' },
+    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, sepBefore: '', sepAfter: '' },
+    { id: 'git', name: 'Git', enabled: true, colorBranch: 254, colorClean: 247, colorDirty: 203, sepBefore: '', sepAfter: '' },
   ]
 };
 
@@ -612,6 +612,12 @@ const BAR_STYLES = {
   dot:      { filled: '●', empty: '○', name: 'Точка' },
   arrow:    { filled: '◀', empty: '▷', name: 'Стрелка' },
   emoji:    { filled: '🟢', empty: '⚪', name: 'Эмодзи' },
+  line:     { filled: '━', empty: '─', name: 'Линия' },
+  square:   { filled: '■', empty: '□', name: 'Квадрат' },
+  rect:     { filled: '▰', empty: '▱', name: 'Прямоугольник' },
+  star:     { filled: '★', empty: '☆', name: 'Звезда' },
+  braille:  { filled: '⣿', empty: '⣀', name: 'Брайль' },
+  slim:     { filled: '▪', empty: '▫', name: 'Мини' },
 };
 
 function renderBar(percent, style, length) {
@@ -682,8 +688,10 @@ function renderColoredBar(percent, style, length, fillColorOverride) {
   }
   const emptyStr = cfg.empty.repeat(empty);
 
-  return (filledStr ? `<span style="color:${fillColor}">${filledStr}</span>` : '')
-       + (emptyStr  ? `<span style="color:${emptyColor}">${emptyStr}</span>` : '');
+  return `<span style="letter-spacing:0;line-height:1;vertical-align:middle">`
+       + (filledStr ? `<span style="color:${fillColor}">${filledStr}</span>` : '')
+       + (emptyStr  ? `<span style="color:${emptyColor}">${emptyStr}</span>` : '')
+       + `</span>`;
 }
 
 function renderPreview() {
@@ -698,7 +706,6 @@ function renderPreview() {
   for (const block of state.blocks) {
     if (!block.enabled) continue;
 
-    if (block.spaceBefore > 0) parts.push(spaces(block.spaceBefore));
     if (block.sepBefore) parts.push(sep(block.sepBefore));
 
     switch (block.id) {
@@ -706,7 +713,7 @@ function renderPreview() {
         parts.push(`<span style="color:${ansiToCSS(block.color)}">[${MOCK.model}]</span>`);
         break;
       case 'context':
-        parts.push(`<span style="color:${getContextColor(MOCK.contextPercent)}">${MOCK.contextPercent}%</span>`);
+        parts.push(`<span style="color:${getContextColor(MOCK.contextPercent)}"> ${MOCK.contextPercent}%</span>`);
         break;
       case 'rate5h': {
         const rateColor = ansiToCSS(block.color);
@@ -739,7 +746,7 @@ function renderPreview() {
     }
 
     if (block.sepAfter) parts.push(sep(block.sepAfter));
-    if (block.spaceAfter > 0) parts.push(spaces(block.spaceAfter));
+    parts.push(' ');
   }
 
   preview.innerHTML = parts.join('');
@@ -993,12 +1000,6 @@ function buildSepRows(el, block) {
   ));
   el.appendChild(buildRow('Разделитель после',
     buildSegment(SEP_OPTIONS, block.sepAfter, v => { block.sepAfter = v; render(); })
-  ));
-  el.appendChild(buildRow('Пробелы до',
-    buildCounter(block.spaceBefore ?? 0, 0, 4, v => { block.spaceBefore = v; render(); })
-  ));
-  el.appendChild(buildRow('Пробелы после',
-    buildCounter(block.spaceAfter ?? 0, 0, 4, v => { block.spaceAfter = v; render(); })
   ));
 }
 
@@ -1324,14 +1325,13 @@ function generateScript() {
   lines.push('# ── Print statusline ──');
   for (const block of state.blocks) {
     if (!block.enabled) continue;
-    if (block.spaceBefore > 0) lines.push(`printf "${' '.repeat(block.spaceBefore)}"`);
     if (block.sepBefore) lines.push(`printf " ${block.sepBefore} "`);
     switch (block.id) {
       case 'model':
         lines.push(`printf "\${MODEL_COLOR}[%s]\${RESET} " "$model"`);
         break;
       case 'context':
-        lines.push(`printf "\${ctx_color}%s%%\${RESET} " "$percent"`);
+        lines.push(`printf "\${ctx_color} %s%%\${RESET} " "$percent"`);
         break;
       case 'rate5h':
         lines.push('# rate5h: requires rate limit data in JSON input');
@@ -1379,7 +1379,7 @@ function generateScript() {
         break;
     }
     if (block.sepAfter) lines.push(`printf " ${block.sepAfter} "`);
-    if (block.spaceAfter > 0) lines.push(`printf "${' '.repeat(block.spaceAfter)}"`);
+    lines.push(`printf " "`);
   }
 
   lines.push('');
