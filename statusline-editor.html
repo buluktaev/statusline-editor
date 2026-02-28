@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Statusline Editor</title>
+  <title>Statusline Editor v2</title>
   <style>
     :root {
       --bg: #1a1a1a;
@@ -40,15 +40,7 @@
       gap: 16px;
     }
 
-    #header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-    }
+    
     #header h1 {
       font-size: 14px;
       font-weight: 600;
@@ -284,16 +276,27 @@
     /* Theme toggle */
     .theme-toggle { display: flex; gap: 4px; }
     .theme-btn {
-      padding: 3px 8px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-family: var(--font);
-      font-size: 11px;
-      color: var(--text-dim);
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: transparent;
+      border: none;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease;
     }
-    .theme-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .theme-btn:hover {
+      opacity: 0.7;
+    }
+    #theme-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     /* Space counter */
     .space-counter { display: flex; align-items: center; gap: 6px; }
@@ -424,22 +427,8 @@
 </head>
 <body>
   <div id="app">
-    <div id="header">
-      <h1>⬛ Statusline Editor</h1>
-      <div class="btn-group">
-        <button class="btn" onclick="copyScript()">Copy script</button>
-        <button class="btn btn-primary" onclick="copyInstallCmd()">Copy install cmd</button>
-      </div>
-    </div>
-
-    <div class="preview-wrap">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div id="preview-label">PREVIEW</div>
-        <div class="theme-toggle">
-          <button class="theme-btn active" id="btn-dark" onclick="setTheme('dark')">🌙 Dark</button>
-          <button class="theme-btn" id="btn-light" onclick="setTheme('light')">☀️ Light</button>
-        </div>
-      </div>
+<div class="preview-wrap">
+      <div style="margin-bottom:8px"></div>
       <div class="term-window">
         <div class="term-titlebar">
           <div class="term-dots">
@@ -448,13 +437,15 @@
             <div class="term-dot dot-green"></div>
           </div>
           <div class="term-title">* Claude Code</div>
-          <div style="width:47px"></div>
+          <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" style="width:24px;height:24px;padding:0;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <div id="theme-icon"></div>
+          </button>
         </div>
         <div class="term-body">
           <div class="claude-welcome-box">
             <div class="claude-welcome-hdr">
               <span class="claude-welcome-hdr-line"></span>
-              <span class="claude-welcome-hdr-text">Claude Code <span style="color:var(--text-dim)">v2.1.59</span></span>
+              <span class="claude-welcome-hdr-text">Claude Code</span>
               <span class="claude-welcome-hdr-line"></span>
             </div>
             <div class="claude-welcome-inner">
@@ -553,44 +544,69 @@ function ansiEscape(n) {
 // ─────────────────────────────────────────
 
 const DEFAULTS = {
+  globalSep: '|',
+  globalSepEnabled: true,
+  globalSepColor: 243,
   blocks: [
-    { id: 'model', name: 'Model', enabled: true, color: 254, sepBefore: '', sepAfter: '|' },
+    { id: 'model', name: 'Model', enabled: true, color: 254 },
+    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, showBar: true, color: 249, colorReset: 238 },
+    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, showBar: true, color: 249, colorReset: 238 },
     {
-      id: 'context', name: 'Context %', enabled: true, sepBefore: '', sepAfter: '',
+      id: 'context', name: 'Context %', enabled: true, showContextTokens: true, contextTokensColor: 243,
       thresholds: [
         { max: 50, color: 82 },
         { max: 80, color: 226 },
         { max: 100, color: 203 },
       ],
     },
-    { id: 'rate5h', name: 'Rate 5h', enabled: true, style: 'classic', showReset: true, color: 249, colorReset: 238, sepBefore: '', sepAfter: '' },
-    { id: 'rateWeek', name: 'Rate Week', enabled: true, style: 'classic', showReset: false, color: 249, colorReset: 238, sepBefore: '', sepAfter: '' },
-    { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245, sepBefore: '', sepAfter: '|' },
-    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, sepBefore: '', sepAfter: '' },
-    { id: 'git', name: 'Git', enabled: true, colorBranch: 254, colorClean: 247, colorDirty: 203, sepBefore: '', sepAfter: '' },
+    { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245 },
+    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254, colorClean: 247, colorDirty: 203 },
   ]
 };
 
 let state = JSON.parse(JSON.stringify(DEFAULTS));
-let selectedBlockId = null;
+
+// Ensure all blocks have required properties
+state.blocks.forEach(block => {
+  if (block.id === 'directory') {
+    if (!('showGit' in block)) block.showGit = true;
+  }
+});
+let selectedBlockId = 'rate5h';
 let previewTheme = 'dark';
+
+function toggleTheme() {
+  previewTheme = previewTheme === 'dark' ? 'light' : 'dark';
+  setTheme(previewTheme);
+}
 
 function setTheme(t) {
   previewTheme = t;
   const termWindow = document.querySelector('.term-window');
   if (t === 'light') termWindow.classList.add('light-mode');
   else termWindow.classList.remove('light-mode');
-  document.getElementById('btn-dark').classList.toggle('active', t === 'dark');
-  document.getElementById('btn-light').classList.toggle('active', t === 'light');
+  
+  // Update icon
+  const iconEl = document.getElementById('theme-icon');
+  const isDark = t === 'dark';
+  iconEl.style.cssText = 'width:16px;height:16px;display:flex;align-items:center;justify-content:center;';
+  if (isDark) {
+    // Show moon icon for dark mode
+    iconEl.innerHTML = '<img src="https://api.iconify.design/line-md:moon-rising-filled-alt-loop.svg?width=16&height=16&color=white" width="16" height="16" alt="Dark mode">';
+  } else {
+    // Show sun icon for light mode
+    iconEl.innerHTML = '<img src="https://api.iconify.design/line-md:moon-filled-alt-to-sunny-filled-loop-transition.svg?width=16&height=16&color=white" width="16" height="16" alt="Light mode">';
+  }
 }
 
 const MOCK = {
   model: 'Sonnet 4.6',
   contextPercent: 30,
+  contextMaxTokens: 200000,
   rate5hPercent: 68,
-  rate5hReset: '2h 14m',
+  rate5hReset: '2h14m',
   rateWeekPercent: 42,
-  rateWeekReset: '4d 3h',
+  rateWeekReset: '4d3h',
   inputTokens: 12400,
   outputTokens: 3100,
   cwd: '~/proj/app',
@@ -607,17 +623,9 @@ const MOCK = {
 
 const BAR_STYLES = {
   classic:  { filled: '▓', empty: '░', name: 'Классический' },
-  gradient: { filled: '█', empty: '░', name: 'Градиент' },
   diamond:  { filled: '◆', empty: '◇', name: 'Бриллиант' },
   dot:      { filled: '●', empty: '○', name: 'Точка' },
-  arrow:    { filled: '◀', empty: '▷', name: 'Стрелка' },
-  emoji:    { filled: '🟢', empty: '⚪', name: 'Эмодзи' },
   line:     { filled: '━', empty: '─', name: 'Линия' },
-  square:   { filled: '■', empty: '□', name: 'Квадрат' },
-  rect:     { filled: '▰', empty: '▱', name: 'Прямоугольник' },
-  star:     { filled: '★', empty: '☆', name: 'Звезда' },
-  braille:  { filled: '⣿', empty: '⣀', name: 'Брайль' },
-  slim:     { filled: '▪', empty: '▫', name: 'Мини' },
 };
 
 function renderBar(percent, style, length) {
@@ -700,53 +708,69 @@ function renderPreview() {
 
   const isDark = previewTheme === 'dark';
   const sepColor = isDark ? '#555' : '#aaa';
-  const sep = (ch) => ch ? `<span style="color:${sepColor}"> ${ch} </span>` : '';
+  const sepUserColor = ansiToCSS(state.globalSepColor);
+  const sep = (ch) => `<span style="color:${sepUserColor}">&nbsp;${ch}&nbsp;</span>`;
   const spaces = (n) => n > 0 ? '&nbsp;'.repeat(n) : '';
 
+  let isFirst = true;
   for (const block of state.blocks) {
     if (!block.enabled) continue;
 
-    if (block.sepBefore) parts.push(sep(block.sepBefore));
+    if (!isFirst) parts.push(state.globalSepEnabled && state.globalSep ? sep(state.globalSep) : '&nbsp;');
+    isFirst = false;
 
     switch (block.id) {
       case 'model':
         parts.push(`<span style="color:${ansiToCSS(block.color)}">[${MOCK.model}]</span>`);
         break;
-      case 'context':
-        parts.push(`<span style="color:${getContextColor(MOCK.contextPercent)}"> ${MOCK.contextPercent}%</span>`);
+      case 'context': {
+        let html = `<span style="color:${getContextColor(MOCK.contextPercent)}"> ${MOCK.contextPercent}%</span>`;
+        if (block.showContextTokens) {
+          const usedTokens = Math.round(MOCK.contextMaxTokens * MOCK.contextPercent / 100 / 1000) + 'K';
+          const maxTokens = Math.round(MOCK.contextMaxTokens / 1000) + 'K';
+          html += `&nbsp;<span style="color:${ansiToCSS(block.contextTokensColor)}">(${usedTokens}/${maxTokens})</span>`;
+        }
+        parts.push(html);
         break;
+      }
       case 'rate5h': {
         const rateColor = ansiToCSS(block.color);
-        const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8, rateColor);
-        let s = `${bar}<span style="color:${rateColor}"> ${MOCK.rate5hPercent}%</span>`;
-        if (block.showReset) s += ` <span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rate5hReset}</span>`;
+        let s = '';
+        if (block.showBar) {
+          const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8, rateColor);
+          s += bar + '&nbsp;';
+        }
+        s += `<span style="color:${rateColor}">h${MOCK.rate5hPercent}%</span>`;
+        if (block.showReset) s += `&nbsp;<span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rate5hReset}</span>`;
         parts.push(s);
         break;
       }
       case 'rateWeek': {
         const rateColor = ansiToCSS(block.color);
-        const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8, rateColor);
-        let s = `${bar}<span style="color:${rateColor}"> ${MOCK.rateWeekPercent}%</span>`;
-        if (block.showReset) s += ` <span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rateWeekReset}</span>`;
+        let s = '';
+        if (block.showBar) {
+          const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8, rateColor);
+          s += bar + '&nbsp;';
+        }
+        s += `<span style="color:${rateColor}">w${MOCK.rateWeekPercent}%</span>`;
+        if (block.showReset) s += `&nbsp;<span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rateWeekReset}</span>`;
         parts.push(s);
         break;
       }
       case 'tokens':
         parts.push(`<span style="color:${ansiToCSS(block.color)}">↑${formatTokens(MOCK.inputTokens, block.format)} ↓${formatTokens(MOCK.outputTokens, block.format)}</span>`);
         break;
-      case 'directory':
-        parts.push(`<span style="color:${ansiToCSS(block.color)}">${MOCK.cwd}</span>`);
-        break;
-      case 'git': {
-        const branchColor = ansiToCSS(block.colorBranch);
-        const statusColor = MOCK.gitStatus === 'clean' ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
-        parts.push(`<span style="color:${branchColor}">(${MOCK.gitBranch})</span> <span style="color:${statusColor}">${MOCK.gitStatus === 'clean' ? '✓' : '✗'}</span>`);
+      case 'directory': {
+        let dirHtml = `<span style="color:${ansiToCSS(block.color)}">${MOCK.cwd}</span>`;
+        if (block.showGit ?? true) {
+          const branchColor = ansiToCSS(block.colorBranch);
+          const statusColor = MOCK.gitStatus === 'clean' ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
+          dirHtml += ` <span style="color:${branchColor}">(${MOCK.gitBranch})</span>`;
+        }
+        parts.push(dirHtml);
         break;
       }
     }
-
-    if (block.sepAfter) parts.push(sep(block.sepAfter));
-    parts.push(' ');
   }
 
   preview.innerHTML = parts.join('');
@@ -787,6 +811,7 @@ function renderBlocks() {
       if (e.target.classList.contains('block-toggle')) return;
       selectedBlockId = block.id;
       render();
+setTheme(previewTheme);  // Initialize theme icon
     });
 
     // Клик по toggle — вкл/выкл
@@ -825,6 +850,33 @@ function renderBlocks() {
 
     list.appendChild(item);
   });
+
+  const sepDivider = document.createElement('div');
+  sepDivider.style.cssText = 'height:1px;background:var(--border);margin:6px 0 2px';
+  list.appendChild(sepDivider);
+
+  const sepItem = document.createElement('div');
+  sepItem.className = 'block-item' + (selectedBlockId === '_sep' ? ' active' : '');
+  sepItem.innerHTML = `
+    <span class="block-toggle ${state.globalSepEnabled ? 'on' : ''}" data-id="_sep">
+      ${state.globalSepEnabled ? '✓' : ''}
+    </span>
+    <span class="block-name">Разделитель</span>
+  `;
+
+  sepItem.addEventListener('click', (e) => {
+    if (e.target.classList.contains('block-toggle')) return;
+    selectedBlockId = '_sep';
+    render();
+  });
+
+  sepItem.querySelector('.block-toggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.globalSepEnabled = !state.globalSepEnabled;
+    render();
+  });
+
+  list.appendChild(sepItem);
 }
 // ─────────────────────────────────────────
 // ANSI COLOR PICKER
@@ -948,6 +1000,18 @@ function buildRow(label, content) {
 function renderSettings() {
   const content = document.getElementById('settings-content');
   if (!content) return;
+
+  if (selectedBlockId === '_sep') {
+    content.innerHTML = `<div class="settings-title">Разделитель</div>`;
+    content.appendChild(buildRow('Стиль',
+      buildSegment(SEP_OPTIONS, state.globalSep, v => { state.globalSep = v; render(); })
+    ));
+    content.appendChild(buildRow('Цвет',
+      buildAnsiPalette(state.globalSepColor, v => { state.globalSepColor = v; render(); })
+    ));
+    return;
+  }
+
   const block = state.blocks.find(b => b.id === selectedBlockId);
 
   if (!block) {
@@ -964,7 +1028,6 @@ function renderSettings() {
     case 'rateWeek':   renderRateSettings(content, block); break;
     case 'tokens':     renderTokensSettings(content, block); break;
     case 'directory':  renderDirectorySettings(content, block); break;
-    case 'git':        renderGitSettings(content, block); break;
   }
 }
 
@@ -994,27 +1057,14 @@ function buildCounter(value, min, max, onChange) {
   return wrap;
 }
 
-function buildSepRows(el, block) {
-  el.appendChild(buildRow('Разделитель до',
-    buildSegment(SEP_OPTIONS, block.sepBefore, v => { block.sepBefore = v; render(); })
-  ));
-  el.appendChild(buildRow('Разделитель после',
-    buildSegment(SEP_OPTIONS, block.sepAfter, v => { block.sepAfter = v; render(); })
-  ));
-}
-
 function renderModelSettings(el, block) {
   el.appendChild(buildRow('Цвет текста',
-    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+    buildAnsiPalette(block.color, v => { block.color = v; render();
+  })
   ));
-  buildSepRows(el, block);
 }
 
 function renderContextSettings(el, block) {
-  el.appendChild(buildRow('Показывать',
-    buildToggle(block.enabled, 'Контекст %', v => { block.enabled = v; render(); })
-  ));
-
   const section = document.createElement('div');
   section.className = 'setting-row';
   const sectionLabel = document.createElement('div');
@@ -1030,16 +1080,37 @@ function renderContextSettings(el, block) {
     lbl.className = 'threshold-label';
     lbl.textContent = labels[i];
     row.appendChild(lbl);
-    row.appendChild(buildAnsiPalette(t.color, v => { t.color = v; render(); }));
+    row.appendChild(buildAnsiPalette(t.color, v => { t.color = v; render();
+  }));
     section.appendChild(row);
   });
   el.appendChild(section);
-  buildSepRows(el, block);
+
+  const spacer1 = document.createElement('div');
+  spacer1.style.height = '8px';
+  el.appendChild(spacer1);
+
+  el.appendChild(buildRow('Показывать (K/K)',
+    buildToggle(block.showContextTokens, 'Размер контекста', v => { block.showContextTokens = v; render();
+  })
+  ));
+
+  if (block.showContextTokens) {
+    el.appendChild(buildRow('Цвет (K/K)',
+      buildAnsiPalette(block.contextTokensColor, v => { block.contextTokensColor = v; render();
+  })
+    ));
+  }
 }
 
 function renderRateSettings(el, block) {
-  el.appendChild(buildRow('Показывать',
-    buildToggle(block.enabled, block.name, v => { block.enabled = v; render(); })
+  const spacerRate = document.createElement('div');
+  spacerRate.style.height = '8px';
+  el.appendChild(spacerRate);
+
+  el.appendChild(buildRow('Показывать шкалу',
+    buildToggle(block.showBar, 'Шкала процентов', v => { block.showBar = v; render();
+  })
   ));
 
   const cardsRow = document.createElement('div');
@@ -1056,76 +1127,83 @@ function renderRateSettings(el, block) {
     card.className = 'style-card' + (block.style === key ? ' active' : '');
     const preview = renderBar(60, key, 6);
     card.innerHTML = `<div class="style-card-preview">${preview}</div><div class="style-card-name">${cfg.name}</div>`;
-    card.addEventListener('click', () => { block.style = key; render(); });
+    card.addEventListener('click', () => { block.style = key; render();
+  });
     cards.appendChild(card);
   });
   cardsRow.appendChild(cards);
   el.appendChild(cardsRow);
 
   el.appendChild(buildRow('Цвет шкалы',
-    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+    buildAnsiPalette(block.color, v => { block.color = v; render();
+  })
   ));
 
+  const spacerReset = document.createElement('div');
+  spacerReset.style.height = '8px';
+  el.appendChild(spacerReset);
+
   el.appendChild(buildRow('Показывать "до сброса"',
-    buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render(); })
+    buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render();
+  })
   ));
   if (block.showReset) {
     el.appendChild(buildRow('Цвет таймера',
-      buildAnsiPalette(block.colorReset ?? 238, v => { block.colorReset = v; render(); })
+      buildAnsiPalette(block.colorReset ?? 238, v => { block.colorReset = v; render();
+  })
     ));
   }
-  buildSepRows(el, block);
 }
 
 function renderTokensSettings(el, block) {
-  el.appendChild(buildRow('Показывать',
-    buildToggle(block.enabled, 'Токены', v => { block.enabled = v; render(); })
-  ));
   el.appendChild(buildRow('Формат числа',
     buildSegment(
       [{value:'1k',label:'12k'},{value:'1.2k',label:'12.4k'},{value:'1000',label:'12400'}],
       block.format,
-      v => { block.format = v; render(); }
+      v => { block.format = v; render();
+}
     )
   ));
   el.appendChild(buildRow('Цвет',
-    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+    buildAnsiPalette(block.color, v => { block.color = v; render();
+  })
   ));
-  buildSepRows(el, block);
 }
 
 function renderDirectorySettings(el, block) {
-  el.appendChild(buildRow('Показывать',
-    buildToggle(block.enabled, 'Директория', v => { block.enabled = v; render(); })
-  ));
   el.appendChild(buildRow('Глубина пути',
     buildSegment(
       [{value:1,label:'app'},{value:2,label:'proj/app'},{value:0,label:'полный'}],
       block.depth,
-      v => { block.depth = parseInt(v); render(); }
+      v => { block.depth = parseInt(v); render();
+}
     )
   ));
   el.appendChild(buildRow('Цвет',
-    buildAnsiPalette(block.color, v => { block.color = v; render(); })
+    buildAnsiPalette(block.color, v => { block.color = v; render();
+  })
   ));
-  buildSepRows(el, block);
+
+  // Git section
+  const gitDiv = document.createElement('div');
+  gitDiv.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
+  el.appendChild(gitDiv);
+
+  el.appendChild(buildRow('Git',
+    buildToggle(block.showGit ?? true, 'Git', v => { block.showGit = v; render();
+  })
+  ));
+
+  if (block.showGit ?? true) {
+    el.appendChild(buildRow('Цвет ветки',
+      buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render();
+  })
+    ));
+
+
+  }
 }
 
-function renderGitSettings(el, block) {
-  el.appendChild(buildRow('Показывать',
-    buildToggle(block.enabled, 'Git', v => { block.enabled = v; render(); })
-  ));
-  el.appendChild(buildRow('Цвет ветки',
-    buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render(); })
-  ));
-  el.appendChild(buildRow('Цвет clean ✓',
-    buildAnsiPalette(block.colorClean, v => { block.colorClean = v; render(); })
-  ));
-  el.appendChild(buildRow('Цвет dirty ✗',
-    buildAnsiPalette(block.colorDirty, v => { block.colorDirty = v; render(); })
-  ));
-  buildSepRows(el, block);
-}
 function renderOutput() {
   const el = document.getElementById('output-code');
   if (el) el.textContent = generateScript();
@@ -1170,7 +1248,7 @@ function copyInstallCmd() {
 function generateScript() {
   const lines = [];
   lines.push('#!/bin/bash');
-  lines.push('# Statusline — generated by statusline-editor.html');
+  lines.push('# Statusline — generated by statusline-editor.html v2');
   lines.push('');
   lines.push('JSON_INPUT=$(cat)');
   lines.push('');
@@ -1181,6 +1259,9 @@ function generateScript() {
   lines.push('cwd=$(echo "$JSON_INPUT" | jq -r \'.cwd // (.workspace.current_dir // "")\')');
   lines.push('');
   lines.push('RESET="\\033[0m"');
+  if (state.globalSepEnabled && state.globalSep) {
+    lines.push(`SEP_COLOR="\\033[38;5;${state.globalSepColor}m"`);
+  }
 
   state.blocks.forEach(block => {
     if (!block.enabled) return;
@@ -1204,11 +1285,11 @@ function generateScript() {
         break;
       case 'directory':
         lines.push(`DIR_COLOR="\\033[38;5;${block.color}m"`);
-        break;
-      case 'git':
-        lines.push(`GIT_COLOR="\\033[38;5;${block.colorBranch}m"`);
-        lines.push(`GIT_CLEAN="\\033[38;5;${block.colorClean}m"`);
-        lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
+        if (block.showGit) {
+          lines.push(`GIT_COLOR="\\033[38;5;${block.colorBranch}m"`);
+          lines.push(`GIT_CLEAN="\\033[38;5;${block.colorClean}m"`);
+          lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
+        }
         break;
     }
   });
@@ -1323,15 +1404,26 @@ function generateScript() {
 
   // Print statusline
   lines.push('# ── Print statusline ──');
+  let firstBlock = true;
   for (const block of state.blocks) {
     if (!block.enabled) continue;
-    if (block.sepBefore) lines.push(`printf " ${block.sepBefore} "`);
+    if (!firstBlock && state.globalSepEnabled && state.globalSep) {
+      lines.push(`printf "\${SEP_COLOR}${state.globalSep}\${RESET} "`);
+    }
+    firstBlock = false;
     switch (block.id) {
       case 'model':
         lines.push(`printf "\${MODEL_COLOR}[%s]\${RESET} " "$model"`);
         break;
       case 'context':
-        lines.push(`printf "\${ctx_color} %s%%\${RESET} " "$percent"`);
+        if (block.showContextTokens) {
+          lines.push(`CTX_MAX=200000  # Max context tokens for current model`);
+          lines.push(`used_tokens=$((CTX_MAX * percent / 100 / 1000))`);
+          lines.push(`max_tokens=$((CTX_MAX / 1000))`);
+          lines.push(`printf "\${ctx_color} %s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET} " "$percent" "$used_tokens" "$max_tokens"`);
+        } else {
+          lines.push(`printf "\${ctx_color} %s%%\${RESET} " "$percent"`);
+        }
         break;
       case 'rate5h':
         lines.push('# rate5h: requires rate limit data in JSON input');
@@ -1354,7 +1446,7 @@ function generateScript() {
           lines.push('# [[ -n "$rate_week_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate_week_reset"');
           lines.push('# printf " ${RESET}"');
         } else {
-          lines.push('# printf "${RATEWEEK_COLOR}%s %s%%${RESET} " "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"');
+          lines.push('# printf "${RATEWEEK_COLOR}W%s %%${RESET} " "$rate_week_pct"');
         }
         break;
       case 'tokens':
@@ -1362,23 +1454,18 @@ function generateScript() {
         break;
       case 'directory':
         lines.push(`printf "\${DIR_COLOR}%s\${RESET}" "$directory"`);
-        break;
-      case 'git':
-        lines.push('if [[ -n "$cwd" ]]; then');
-        lines.push('  git_branch=$(get_git_branch "$cwd")');
-        lines.push('  if [[ -n "$git_branch" ]]; then');
-        lines.push('    git_status=$(get_git_status "$cwd")');
-        lines.push('    printf " \${GIT_COLOR}(%s)\${RESET}" "$git_branch"');
-        lines.push('    if [[ "$git_status" == "clean" ]]; then');
-        lines.push('      printf " \${GIT_CLEAN}✓\${RESET}"');
-        lines.push('    else');
-        lines.push('      printf " \${GIT_DIRTY}✗\${RESET}"');
-        lines.push('    fi');
-        lines.push('  fi');
-        lines.push('fi');
+        if (block.showGit) {
+          lines.push('if [[ -n "$cwd" ]]; then');
+          lines.push('  git_branch=$(get_git_branch "$cwd")');
+          lines.push('  if [[ -n "$git_branch" ]]; then');
+          lines.push('    git_status=$(get_git_status "$cwd")');
+          lines.push('    printf " \${GIT_COLOR}(%s)\${RESET}" "$git_branch"');
+
+          lines.push('  fi');
+          lines.push('fi');
+        }
         break;
     }
-    if (block.sepAfter) lines.push(`printf " ${block.sepAfter} "`);
     lines.push(`printf " "`);
   }
 
@@ -1387,6 +1474,7 @@ function generateScript() {
 }
 
 render();
-  </script>
+setTheme(previewTheme);
+</script>
 </body>
 </html>
