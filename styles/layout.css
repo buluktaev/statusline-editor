@@ -55,14 +55,14 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
-    .header-version {
-      font-size: 10px;
+    .header-github {
       color: var(--text-muted);
-      letter-spacing: 0.12em;
-      padding: 3px 7px;
-      border: 1px solid var(--border);
-      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      transition: color 0.15s;
     }
+    .header-github:hover { color: var(--text); }
 
     /* ── Buttons ── */
     .btn-group { display: flex; gap: 6px; }

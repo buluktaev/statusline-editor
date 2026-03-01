@@ -13,11 +13,12 @@ function setTheme(t) {
   const iconEl = document.getElementById('theme-icon');
   const isDark = t === 'dark';
   iconEl.style.cssText = 'width:16px;height:16px;display:flex;align-items:center;justify-content:center;';
+  const iconColor = isDark ? 'white' : '%23555555';
   if (isDark) {
-    // Show moon icon for dark mode
-    iconEl.innerHTML = '<img src="https://api.iconify.design/line-md:moon-rising-filled-alt-loop.svg?width=16&height=16&color=white" width="16" height="16" alt="Dark mode">';
+    // Dark theme active → show sun (click to switch to light)
+    iconEl.innerHTML = `<img src="https://api.iconify.design/line-md:sunny-filled-loop.svg?width=16&height=16&color=${iconColor}" width="16" height="16" alt="Switch to light mode">`;
   } else {
-    // Show sun icon for light mode
-    iconEl.innerHTML = '<img src="https://api.iconify.design/line-md:moon-filled-alt-to-sunny-filled-loop-transition.svg?width=16&height=16&color=white" width="16" height="16" alt="Light mode">';
+    // Light theme active → show moon (click to switch to dark)
+    iconEl.innerHTML = `<img src="https://api.iconify.design/line-md:moon-rising-filled-alt-loop.svg?width=16&height=16&color=${iconColor}" width="16" height="16" alt="Switch to dark mode">`;
   }
 }
