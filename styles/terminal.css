@@ -9,7 +9,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.6;
+      opacity: 0.5;
       transition: opacity 0.2s;
     }
     .theme-btn:hover { opacity: 1; }
@@ -22,30 +22,22 @@
     }
 
     /* ── Terminal Window ── */
-    .term-window {
-      background: #141414;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow:
-        0 24px 64px rgba(0,0,0,0.7),
-        0 0 0 1px rgba(255,255,255,0.04),
-        0 1px 0 rgba(255,255,255,0.06) inset;
-    }
+    .term-window { background: #141414; }
 
     .term-titlebar {
-      background: #1c1c1c;
-      height: 36px;
+      background: #181818;
+      height: 34px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 14px;
-      border-bottom: 1px solid #252525;
+      border-bottom: 1px solid #1e1e1e;
     }
 
     .term-dots { display: flex; gap: 7px; align-items: center; }
     .term-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       transition: filter 0.15s;
     }
@@ -54,22 +46,9 @@
     .dot-yellow { background: #ffbd2e; }
     .dot-green  { background: #28c841; }
 
-    .term-title {
-      flex: 1;
-      text-align: center;
-      font-size: 12px;
-      color: #555;
-      user-select: none;
-      letter-spacing: 0.04em;
-    }
+    .term-body { padding: 16px 20px 12px; }
 
-    .term-body { padding: 18px 22px 14px; }
-
-    .claude-welcome-box {
-      border: 1px solid rgba(232, 129, 77, 0.4);
-      border-radius: 3px;
-      overflow: hidden;
-    }
+    .claude-welcome-box { border: 1px solid rgba(232, 129, 77, 0.2); }
     .claude-welcome-hdr {
       display: flex;
       align-items: center;
@@ -77,12 +56,7 @@
       color: var(--accent);
       font-size: 11px;
     }
-    .claude-welcome-hdr-line {
-      flex: 1;
-      height: 1px;
-      background: var(--accent);
-      opacity: 0.3;
-    }
+    .claude-welcome-hdr-line { flex: 1; height: 1px; background: var(--accent); opacity: 0.2; }
     .claude-welcome-hdr-text { padding: 0 8px; white-space: nowrap; letter-spacing: 0.06em; }
 
     .claude-welcome-inner {
@@ -98,44 +72,18 @@
       padding: 8px 20px 10px;
       gap: 10px;
     }
-    .claude-greeting {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: 0.04em;
-    }
-    .claude-meta {
-      font-size: 11px;
-      color: var(--text-dim);
-      text-align: center;
-      line-height: 1.8;
-    }
-    .claude-divider { background: #2a2a2a; width: 1px; }
-    .claude-right {
-      padding: 8px 20px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .claude-section-hdr {
-      font-size: 11px;
-      color: var(--accent);
-      font-weight: 600;
-      margin-bottom: 3px;
-      letter-spacing: 0.04em;
-    }
-    .claude-section-body {
-      font-size: 11px;
-      color: var(--text-dim);
-      line-height: 1.55;
-    }
-    .claude-section-sep { height: 1px; background: #252525; }
+    .claude-greeting { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.04em; }
+    .claude-meta { font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.8; }
+    .claude-divider { background: #1e1e1e; width: 1px; }
+    .claude-right { padding: 8px 20px 10px; display: flex; flex-direction: column; gap: 12px; }
+    .claude-section-hdr { font-size: 11px; color: var(--accent); font-weight: 600; margin-bottom: 3px; letter-spacing: 0.04em; }
+    .claude-section-body { font-size: 11px; color: var(--text-dim); line-height: 1.55; }
+    .claude-section-sep { height: 1px; background: #1e1e1e; }
 
-    /* ── Preview inside terminal ── */
+    /* ── Preview bar inside terminal ── */
     .term-window #preview {
       border: none;
-      border-top: 1px solid #1e1e1e;
-      border-radius: 0;
+      border-top: 1px solid #1a1a1a;
       padding: 11px 18px;
       background: #0a0a0a;
       min-height: 44px;
@@ -144,22 +92,12 @@
     }
 
     /* ── Light theme ── */
-    .term-window.light-mode {
-      background: #f5f2ed;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.07);
-    }
-    .term-window.light-mode .term-titlebar {
-      background: #ebe8e3;
-      border-bottom-color: #d8d5d0;
-    }
-    .term-window.light-mode .term-title { color: #888; }
+    .term-window.light-mode { background: #f5f2ed; }
+    .term-window.light-mode .term-titlebar { background: #ebe8e3; border-bottom-color: #d8d5d0; }
     .term-window.light-mode .term-body { background: #f5f2ed; }
     .term-window.light-mode .claude-greeting { color: #1a1a1a; }
     .term-window.light-mode .claude-meta { color: #777; }
     .term-window.light-mode .claude-section-body { color: #777; }
     .term-window.light-mode .claude-divider { background: #d0cdc8; }
     .term-window.light-mode .claude-section-sep { background: #d0cdc8; }
-    .term-window.light-mode #preview {
-      background: #eeebe6;
-      border-top-color: #d8d5d0;
-    }
+    .term-window.light-mode #preview { background: #eeebe6; border-top-color: #d8d5d0; }

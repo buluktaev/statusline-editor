@@ -1,18 +1,18 @@
 :root {
-      --bg:        #0e0e0e;
-      --bg2:       #161616;
-      --bg3:       #1e1e1e;
-      --bg4:       #282828;
-      --border:    #2e2e2e;
-      --border-hi: #404040;
-      --text:      #d8d8d8;
-      --text-dim:  #666666;
-      --text-muted:#444444;
-      --accent:    #e8814d;
-      --accent-dim:#5c3018;
-      --accent-glow: rgba(232, 129, 77, 0.08);
-      --green:     #4ec94e;
-      --yellow:    #e8c44d;
-      --red:       #e84d4d;
-      --font: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
-    }
+  --bg:        #0a0a0a;
+  --bg2:       #0d0d0d;
+  --bg3:       #121212;
+  --bg4:       #181818;
+  --border:    #1c1c1c;
+  --border-hi: #2a2a2a;
+  --text:      #aaaaaa;
+  --text-dim:  #484848;
+  --text-muted:#2c2c2c;
+  --accent:    #e8814d;
+  --accent-dim:#3a1a08;
+  --accent-glow: rgba(232, 129, 77, 0.05);
+  --green:     #4ec94e;
+  --yellow:    #e8c44d;
+  --red:       #e84d4d;
+  --font: 'Geist Mono', 'JetBrains Mono', monospace;
+}

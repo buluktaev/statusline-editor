@@ -7,7 +7,6 @@
       inset: 0;
       background: var(--bg4);
       border: 1px solid var(--border);
-      border-radius: 9px;
       transition: background 0.15s, border-color 0.15s;
     }
     .toggle-slider::before {
@@ -18,17 +17,10 @@
       left: 2px;
       top: 2px;
       background: var(--text-dim);
-      border-radius: 50%;
       transition: transform 0.15s, background 0.15s;
     }
-    .toggle input:checked + .toggle-slider {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-    }
-    .toggle input:checked + .toggle-slider::before {
-      transform: translateX(16px);
-      background: var(--accent);
-    }
+    .toggle input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: var(--accent); }
     .toggle-text { font-size: 12px; color: var(--text-dim); }
 
     /* ── Segment buttons ── */
@@ -37,7 +29,6 @@
       padding: 4px 11px;
       background: var(--bg3);
       border: 1px solid var(--border);
-      border-radius: 3px;
       font-family: var(--font);
       font-size: 11px;
       color: var(--text-dim);
@@ -45,11 +36,7 @@
       transition: background 0.1s, border-color 0.1s, color 0.1s;
     }
     .segment-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border-hi); }
-    .segment-btn.active {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .segment-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
     /* ── Style cards ── */
     .style-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
@@ -57,7 +44,6 @@
       padding: 10px 6px;
       background: var(--bg3);
       border: 1px solid var(--border);
-      border-radius: 3px;
       cursor: pointer;
       text-align: center;
       transition: border-color 0.12s, background 0.12s;
@@ -67,11 +53,7 @@
       align-items: center;
     }
     .style-card:hover { background: var(--bg4); border-color: var(--border-hi); }
-    .style-card.active {
-      border-color: var(--accent);
-      background: var(--bg4);
-      box-shadow: inset 0 0 0 1px rgba(232, 129, 77, 0.12);
-    }
+    .style-card.active { border-color: var(--accent); background: var(--bg4); }
     .style-card-preview {
       font-size: 13px;
       letter-spacing: 0.05em;
@@ -86,7 +68,6 @@
     .color-swatch {
       width: 22px;
       height: 22px;
-      border-radius: 3px;
       border: 1px solid var(--border);
       cursor: pointer;
       display: inline-block;
@@ -102,16 +83,10 @@
       width: 13px;
       height: 13px;
       cursor: pointer;
-      border-radius: 2px;
       border: 1px solid transparent;
       transition: border-color 0.08s, transform 0.08s;
     }
-    .ansi-cell:hover {
-      border-color: rgba(255,255,255,0.7);
-      transform: scale(1.4);
-      z-index: 1;
-      position: relative;
-    }
+    .ansi-cell:hover { border-color: rgba(255,255,255,0.7); transform: scale(1.4); z-index: 1; position: relative; }
     .ansi-cell.selected { border-color: rgba(255,255,255,0.9); }
 
     /* ── Space counter ── */
@@ -120,7 +95,6 @@
       width: 20px; height: 20px;
       background: var(--bg3);
       border: 1px solid var(--border);
-      border-radius: 3px;
       font-family: var(--font);
       font-size: 13px;
       color: var(--text-dim);
@@ -131,12 +105,7 @@
       transition: background 0.1s, border-color 0.1s, color 0.1s;
     }
     .counter-btn:hover { background: var(--bg4); border-color: var(--border-hi); color: var(--text); }
-    .counter-val {
-      min-width: 18px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text);
-    }
+    .counter-val { min-width: 18px; text-align: center; font-size: 12px; color: var(--text); }
 
     /* ── Block items ── */
     .block-item {
@@ -146,17 +115,12 @@
       padding: 7px 8px;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 3px;
       cursor: pointer;
       user-select: none;
       transition: background 0.1s, border-color 0.1s;
     }
     .block-item:hover { background: var(--bg3); border-color: var(--border); }
-    .block-item.active {
-      border-color: var(--accent);
-      background: var(--bg4);
-      box-shadow: inset 0 0 0 1px var(--accent-glow);
-    }
+    .block-item.active { border-color: var(--accent); background: var(--bg4); }
     .block-item.drag-over { border-color: var(--accent); opacity: 0.6; }
 
     .drag-handle {
@@ -174,7 +138,6 @@
       width: 15px;
       height: 15px;
       border: 1px solid var(--border);
-      border-radius: 2px;
       background: var(--bg);
       cursor: pointer;
       display: flex;
@@ -184,15 +147,7 @@
       font-size: 9px;
       transition: background 0.1s, border-color 0.1s;
     }
-    .block-toggle.on {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #0e0e0e;
-    }
+    .block-toggle.on { background: var(--accent); border-color: var(--accent); color: #0e0e0e; }
 
-    .block-name {
-      flex: 1;
-      font-size: 12px;
-      letter-spacing: 0.02em;
-    }
+    .block-name { flex: 1; font-size: 12px; letter-spacing: 0.02em; }
     .block-item.disabled .block-name { color: var(--text-muted); }
