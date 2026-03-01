@@ -1,15 +1,18 @@
 :root {
-      --bg: #1a1a1a;
-      --bg2: #222222;
-      --bg3: #2a2a2a;
-      --bg4: #333333;
-      --border: #3a3a3a;
-      --text: #d4d4d4;
-      --text-dim: #888888;
-      --accent: #e8814d;
-      --accent-dim: #7a3f20;
-      --green: #4ec94e;
-      --yellow: #e8c44d;
-      --red: #e84d4d;
-      --font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --bg:        #0e0e0e;
+      --bg2:       #161616;
+      --bg3:       #1e1e1e;
+      --bg4:       #282828;
+      --border:    #2e2e2e;
+      --border-hi: #404040;
+      --text:      #d8d8d8;
+      --text-dim:  #666666;
+      --text-muted:#444444;
+      --accent:    #e8814d;
+      --accent-dim:#5c3018;
+      --accent-glow: rgba(232, 129, 77, 0.08);
+      --green:     #4ec94e;
+      --yellow:    #e8c44d;
+      --red:       #e84d4d;
+      --font: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
     }
