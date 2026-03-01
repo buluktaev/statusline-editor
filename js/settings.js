@@ -90,31 +90,33 @@ function renderRateSettings(el, block) {
   })
   ));
 
-  const cardsRow = document.createElement('div');
-  cardsRow.className = 'setting-row';
-  const cardsLabel = document.createElement('div');
-  cardsLabel.className = 'setting-label';
-  cardsLabel.textContent = 'Стиль шкалы';
-  cardsRow.appendChild(cardsLabel);
+  if (block.showBar) {
+    const cardsRow = document.createElement('div');
+    cardsRow.className = 'setting-row';
+    const cardsLabel = document.createElement('div');
+    cardsLabel.className = 'setting-label';
+    cardsLabel.textContent = 'Стиль шкалы';
+    cardsRow.appendChild(cardsLabel);
 
-  const cards = document.createElement('div');
-  cards.className = 'style-cards';
-  Object.entries(BAR_STYLES).forEach(([key, cfg]) => {
-    const card = document.createElement('div');
-    card.className = 'style-card' + (block.style === key ? ' active' : '');
-    const preview = renderBar(60, key, 6);
-    card.innerHTML = `<div class="style-card-preview">${preview}</div><div class="style-card-name">${cfg.name}</div>`;
-    card.addEventListener('click', () => { block.style = key; render();
-  });
-    cards.appendChild(card);
-  });
-  cardsRow.appendChild(cards);
-  el.appendChild(cardsRow);
+    const cards = document.createElement('div');
+    cards.className = 'style-cards';
+    Object.entries(BAR_STYLES).forEach(([key, cfg]) => {
+      const card = document.createElement('div');
+      card.className = 'style-card' + (block.style === key ? ' active' : '');
+      const preview = renderBar(60, key, 6);
+      card.innerHTML = `<div class="style-card-preview">${preview}</div><div class="style-card-name">${cfg.name}</div>`;
+      card.addEventListener('click', () => { block.style = key; render();
+    });
+      cards.appendChild(card);
+    });
+    cardsRow.appendChild(cards);
+    el.appendChild(cardsRow);
 
-  el.appendChild(buildRow('Цвет шкалы',
-    buildAnsiPalette(block.color, v => { block.color = v; render();
-  })
-  ));
+    el.appendChild(buildRow('Цвет шкалы',
+      buildAnsiPalette(block.color, v => { block.color = v; render();
+    })
+    ));
+  }
 
   const spacerReset = document.createElement('div');
   spacerReset.style.height = '8px';
