@@ -3,6 +3,7 @@ function render() {
   renderBlocks();
   renderSettings();
   renderOutput();
+  saveState();
 }
 
 render();

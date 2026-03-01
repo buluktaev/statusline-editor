@@ -154,6 +154,26 @@
       overflow-y: auto;
     }
 
+    #blocks-footer {
+      padding: 8px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .btn-reset {
+      width: 100%;
+      padding: 5px 0;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.1s, color 0.1s;
+    }
+    .btn-reset:hover { border-color: var(--red); color: var(--red); }
+
     #settings {
       background: var(--bg);
       overflow-y: auto;
