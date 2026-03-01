@@ -16,9 +16,9 @@ function setTheme(t) {
   const iconColor = isDark ? 'white' : '%23555555';
   if (isDark) {
     // Dark theme active → show sun (click to switch to light)
-    iconEl.innerHTML = `<img src="https://api.iconify.design/line-md:sunny-filled-loop.svg?width=16&height=16&color=${iconColor}" width="16" height="16" alt="Switch to light mode">`;
+    iconEl.innerHTML = `<img src="https://api.iconify.design/tabler:sun-high-filled.svg?width=16&height=16&color=${iconColor}" width="16" height="16" alt="Switch to light mode">`;
   } else {
     // Light theme active → show moon (click to switch to dark)
-    iconEl.innerHTML = `<img src="https://api.iconify.design/line-md:moon-rising-filled-alt-loop.svg?width=16&height=16&color=${iconColor}" width="16" height="16" alt="Switch to dark mode">`;
+    iconEl.innerHTML = `<img src="https://api.iconify.design/mingcute:moon-fill.svg?width=16&height=16&color=${iconColor}" width="16" height="16" alt="Switch to dark mode">`;
   }
 }
