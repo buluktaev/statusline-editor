@@ -85,6 +85,15 @@ function renderContextSettings(el, block) {
 }
 
 function renderRateSettings(el, block) {
+  el.appendChild(buildRow('Цвет %',
+    buildAnsiPalette(block.color, v => { block.color = v; render();
+  })
+  ));
+
+  const divider1 = document.createElement('div');
+  divider1.style.cssText = 'height:1px;background:var(--border);margin:2px 0';
+  el.appendChild(divider1);
+
   el.appendChild(buildRow('Показывать шкалу',
     buildToggle(block.showBar, 'Шкала процентов', v => { block.showBar = v; render();
   })
@@ -118,9 +127,9 @@ function renderRateSettings(el, block) {
     ));
   }
 
-  const spacerReset = document.createElement('div');
-  spacerReset.style.height = '8px';
-  el.appendChild(spacerReset);
+  const divider2 = document.createElement('div');
+  divider2.style.cssText = 'height:1px;background:var(--border);margin:2px 0';
+  el.appendChild(divider2);
 
   el.appendChild(buildRow('Показывать "до сброса"',
     buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render();

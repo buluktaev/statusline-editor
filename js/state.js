@@ -23,16 +23,39 @@ const DEFAULTS = {
   ]
 };
 
-let state = JSON.parse(JSON.stringify(DEFAULTS));
+const STORAGE_KEY = 'sle-state-v1';
 
-// Ensure all blocks have required properties
+// Load saved state or fall back to defaults
+let state = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved && Array.isArray(saved.blocks) && saved.blocks.length > 0) return saved;
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+})();
+
+// Migration: ensure all required fields exist
 state.blocks.forEach(block => {
-  if (block.id === 'directory') {
-    if (!('showGit' in block)) block.showGit = true;
-  }
+  if (block.id === 'directory' && !('showGit' in block)) block.showGit = true;
 });
-let selectedBlockId = 'rate5h';
+
+let selectedBlockId = state.blocks.find(b => b.enabled)?.id ?? 'rate5h';
 let previewTheme = 'dark';
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function resetState() {
+  localStorage.removeItem(STORAGE_KEY);
+  state = JSON.parse(JSON.stringify(DEFAULTS));
+  selectedBlockId = 'rate5h';
+  previewTheme = 'dark';
+}
+
+function isDirty() {
+  return JSON.stringify(state) !== JSON.stringify(DEFAULTS);
+}
 
 const MOCK = {
   model: 'Sonnet 4.6',
