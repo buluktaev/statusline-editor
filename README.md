@@ -67,12 +67,20 @@ Then add to your Claude Code settings (`~/.claude/settings.json`):
 
 ## Requirements
 
-- **bash** — script runs in bash
+- **bash** — script runs in bash (on Windows: Git Bash / WSL)
 - **jq** — parses JSON from Claude Code hooks
 - **python3** — time calculations for rate reset countdown
-- **macOS Keychain** — needed for Rate blocks (reads OAuth token automatically)
 
-The Rate 5h / Rate Week blocks query the Anthropic API for your usage limits. The token is read from macOS Keychain where Claude Code stores it — no manual setup required.
+Rate blocks (5h / Week) need one extra dependency depending on your platform:
+
+| Platform | Credential storage | Extra requirement |
+|---|---|---|
+| **macOS** | Keychain | nothing — works out of the box |
+| **Linux** | libsecret (GNOME Keyring / KWallet) | `sudo apt install libsecret-tools` |
+| **Windows** (Git Bash) | Credential Manager | `Install-Module -Name CredentialManager` in PowerShell |
+| **WSL** | same as Linux | `sudo apt install libsecret-tools` |
+
+The script auto-detects the OS via `uname -s` and reads the token using the right method.
 
 ---
 
