@@ -53,6 +53,10 @@ function resetState() {
   previewTheme = 'dark';
 }
 
+function isDirty() {
+  return JSON.stringify(state) !== JSON.stringify(DEFAULTS);
+}
+
 const MOCK = {
   model: 'Sonnet 4.6',
   contextPercent: 30,
