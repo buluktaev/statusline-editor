@@ -83,9 +83,9 @@
     /* ── Preview bar inside terminal ── */
     .term-window #preview {
       border: none;
-      border-top: 1px solid #1a1a1a;
+      border-top: 1px solid #1e1e1e;
       padding: 11px 18px;
-      background: #0a0a0a;
+      background: #141414;
       min-height: 44px;
       display: flex;
       align-items: center;
