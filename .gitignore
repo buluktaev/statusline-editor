@@ -1,2 +1,5 @@
 .worktrees/
 .firecrawl/
+.claude/
+docs/plans/
+statusline-editor.html
