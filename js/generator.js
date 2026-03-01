@@ -63,7 +63,8 @@ function generateScript() {
     lines.push('from datetime import datetime, timezone');
     lines.push('reset = datetime.fromisoformat(sys.argv[1].replace(\"Z\",\"+00:00\"))');
     lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
-    lines.push('print(f\"{s//3600}h{(s%3600)//60}m\" if s>=3600 else f\"{(s%3600)//60}m\")');
+    lines.push('h, m = s // 3600, (s % 3600) // 60');
+    lines.push('print(str(h) + \"h\" + str(m) + \"m\" if h > 0 else str(m) + \"m\")');
     lines.push('" "$five_h_reset_at" 2>/dev/null)');
     lines.push('');
     lines.push('    [ -n "$week_reset_at" ] && week_reset_str=$(python3 -c "');
@@ -71,8 +72,8 @@ function generateScript() {
     lines.push('from datetime import datetime, timezone');
     lines.push('reset = datetime.fromisoformat(sys.argv[1].replace(\"Z\",\"+00:00\"))');
     lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
-    lines.push('d,h = s//86400, (s%86400)//3600');
-    lines.push('print(f\"{d}d{h}h\" if d>0 else f\"{h}h\")');
+    lines.push('d, h = s // 86400, (s % 86400) // 3600');
+    lines.push('print(str(d) + \"d\" + str(h) + \"h\" if d > 0 else str(h) + \"h\")');
     lines.push('" "$week_reset_at" 2>/dev/null)');
     lines.push('fi');
     lines.push('');
@@ -236,12 +237,12 @@ function generateScript() {
         break;
       case 'context':
         if (block.showContextTokens) {
-          lines.push(`CTX_MAX=200000  # Max context tokens for current model`);
+          lines.push(`CTX_MAX=200000`);
           lines.push(`used_tokens=$((CTX_MAX * percent / 100 / 1000))`);
           lines.push(`max_tokens=$((CTX_MAX / 1000))`);
-          lines.push(`printf "\${ctx_color} %s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET} " "$percent" "$used_tokens" "$max_tokens"`);
+          lines.push(`printf "\${ctx_color}%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET} " "$percent" "$used_tokens" "$max_tokens"`);
         } else {
-          lines.push(`printf "\${ctx_color} %s%%\${RESET} " "$percent"`);
+          lines.push(`printf "\${ctx_color}%s%%\${RESET} " "$percent"`);
         }
         break;
       case 'rate5h':
