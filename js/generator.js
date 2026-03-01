@@ -94,6 +94,7 @@ function generateScript() {
         lines.push(`CTX_LOW="\\033[38;5;${block.thresholds[0].color}m"`);
         lines.push(`CTX_MID="\\033[38;5;${block.thresholds[1].color}m"`);
         lines.push(`CTX_HIGH="\\033[38;5;${block.thresholds[2].color}m"`);
+        if (block.showContextTokens) lines.push(`CTX_TOKENS_COLOR="\\033[38;5;${block.contextTokensColor ?? 243}m"`);
         break;
       case 'rate5h':
         lines.push(`RATE5H_COLOR="\\033[38;5;${block.color}m"`);
@@ -199,8 +200,8 @@ function generateScript() {
   if (ctxBlock) {
     lines.push('get_ctx_color() {');
     lines.push('  local p=$1');
-    lines.push(`  if (( p < ${ctxBlock.thresholds[1].max} )); then echo -e "$CTX_LOW"`);
-    lines.push(`  elif (( p < ${ctxBlock.thresholds[2].max} )); then echo -e "$CTX_MID"`);
+    lines.push(`  if (( p < ${ctxBlock.thresholds[0].max} )); then echo -e "$CTX_LOW"`);
+    lines.push(`  elif (( p < ${ctxBlock.thresholds[1].max} )); then echo -e "$CTX_MID"`);
     lines.push('  else echo -e "$CTX_HIGH"');
     lines.push('  fi');
     lines.push('}');
