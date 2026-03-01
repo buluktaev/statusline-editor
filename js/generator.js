@@ -238,9 +238,9 @@ function generateScript() {
           lines.push(`CTX_MAX=200000`);
           lines.push(`used_tokens=$((CTX_MAX * percent / 100 / 1000))`);
           lines.push(`max_tokens=$((CTX_MAX / 1000))`);
-          lines.push(`printf "\${ctx_color}%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET}" "$percent" "$used_tokens" "$max_tokens"`);
+          lines.push(`printf "\${ctx_color}c%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET}" "$percent" "$used_tokens" "$max_tokens"`);
         } else {
-          lines.push(`printf "\${ctx_color}%s%%\${RESET}" "$percent"`);
+          lines.push(`printf "\${ctx_color}c%s%%\${RESET}" "$percent"`);
         }
         break;
       case 'rate5h':

@@ -39,7 +39,7 @@ function renderPreview() {
         parts.push(`<span style="color:${ansiToCSS(block.color)}">[${MOCK.model}]</span>`);
         break;
       case 'context': {
-        let html = `<span style="color:${getContextColor(MOCK.contextPercent)}"> ${MOCK.contextPercent}%</span>`;
+        let html = `<span style="color:${getContextColor(MOCK.contextPercent)}"> c${MOCK.contextPercent}%</span>`;
         if (block.showContextTokens) {
           const usedTokens = Math.round(MOCK.contextMaxTokens * MOCK.contextPercent / 100 / 1000) + 'K';
           const maxTokens = Math.round(MOCK.contextMaxTokens / 1000) + 'K';
