@@ -108,7 +108,7 @@
 
     #preview {
       padding: 13px 18px;
-      background: #080808;
+      background: var(--bg);
       border-top: 1px solid var(--border);
       font-size: 13px;
       min-height: 44px;
@@ -216,7 +216,7 @@
     }
 
     #output-code {
-      background: #060606;
+      background: var(--bg);
       padding: 12px 14px;
       font-size: 11px;
       line-height: 1.65;
@@ -226,9 +226,9 @@
       max-height: 220px;
       overflow-y: auto;
     }
-    #output-code .sh-comment { color: #383838; }
-    #output-code .sh-var    { color: #888; }
-    #output-code .sh-string { color: #666; }
+    #output-code .sh-comment { color: #505050; }
+    #output-code .sh-var    { color: #9a9a9a; }
+    #output-code .sh-string { color: #7a7a7a; }
 
     /* ── Light preview ── */
     #preview.light-mode { background: #f0ede8; }

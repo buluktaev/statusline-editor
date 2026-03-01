@@ -1,18 +1,28 @@
 :root {
-  --bg:        #0a0a0a;
-  --bg2:       #0d0d0d;
-  --bg3:       #121212;
-  --bg4:       #181818;
-  --border:    #1c1c1c;
-  --border-hi: #2a2a2a;
-  --text:      #aaaaaa;
-  --text-dim:  #484848;
-  --text-muted:#2c2c2c;
-  --accent:    #e8814d;
-  --accent-dim:#3a1a08;
-  --accent-glow: rgba(232, 129, 77, 0.05);
-  --green:     #4ec94e;
-  --yellow:    #e8c44d;
-  --red:       #e84d4d;
+  /* ── Surfaces (each step +10 gray levels) ── */
+  --bg:        #0c0c0c;   /* page background */
+  --bg2:       #161616;   /* panels, sidebars  */
+  --bg3:       #202020;   /* cards, inputs */
+  --bg4:       #2a2a2a;   /* hover / active */
+
+  /* ── Borders ── */
+  --border:    #2e2e2e;   /* default — clearly visible */
+  --border-hi: #4a4a4a;   /* focused / hover */
+
+  /* ── Text ── */
+  --text:      #d4d4d4;   /* primary  */
+  --text-dim:  #737373;   /* secondary */
+  --text-muted:#404040;   /* labels, hints */
+
+  /* ── Accent (orange) ── */
+  --accent:      #e8814d;
+  --accent-dim:  #271408;
+  --accent-glow: rgba(232, 129, 77, 0.08);
+
+  /* ── Status ── */
+  --green:  #4ec94e;
+  --yellow: #e8c44d;
+  --red:    #e84d4d;
+
   --font: 'Geist Mono', 'JetBrains Mono', monospace;
 }
