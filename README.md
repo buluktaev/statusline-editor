@@ -11,14 +11,14 @@ Configure blocks, colors, and thresholds — get a ready-to-use bash script in o
 ## What it looks like
 
 ```
-[Sonnet 4.6]  |  h68% ████████░  2h14m  |  c30%  |  ↑12.4k ↓3.1k  |  ~/proj/app(main)
+[Sonnet 4.6]  |  ████████░ 68%  2h14m  |  c30%  |  ↑12.4k ↓3.1k  |  ~/proj/app(main)
 ```
 
 | Segment | Example | What it shows |
 |---|---|---|
 | **Model** | `[Sonnet 4.6]` | Active model name |
-| **Rate 5h** | `h68% ████░░░░ 2h14m` | 5-hour usage limit — remaining %, bar, time to reset |
-| **Rate Week** | `w42% ███░░░░░ 4d3h` | Weekly usage limit — remaining %, bar, time to reset |
+| **Rate 5h** | `████░░░░ 68% 2h14m` | 5-hour usage limit — bar, remaining %, time to reset |
+| **Rate Week** | `███░░░░░ 42% 4d3h` | Weekly usage limit — bar, remaining %, time to reset |
 | **Context %** | `c30%` | Context window fill — changes color at 50% and 80% |
 | **Tokens** | `↑12.4k ↓3.1k` | Input / output tokens in current session |
 | **Directory** | `~/proj/app(main)` | Working directory + git branch |
