@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statusline Editor v2</title>
+  <link rel="stylesheet" href="styles/variables.css">
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/terminal.css">
+</head>
+<body>
+  <div id="app">
+<div class="preview-wrap">
+      <div style="margin-bottom:8px"></div>
+      <div class="term-window">
+        <div class="term-titlebar">
+          <div class="term-dots">
+            <div class="term-dot dot-red"></div>
+            <div class="term-dot dot-yellow"></div>
+            <div class="term-dot dot-green"></div>
+          </div>
+          <div class="term-title">* Claude Code</div>
+          <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" style="width:24px;height:24px;padding:0;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <div id="theme-icon"></div>
+          </button>
+        </div>
+        <div class="term-body">
+          <div class="claude-welcome-box">
+            <div class="claude-welcome-hdr">
+              <span class="claude-welcome-hdr-line"></span>
+              <span class="claude-welcome-hdr-text">Claude Code</span>
+              <span class="claude-welcome-hdr-line"></span>
+            </div>
+            <div class="claude-welcome-inner">
+              <div class="claude-left">
+                <div class="claude-greeting">Welcome back!</div>
+                <svg width="64" height="76" viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg" fill="#e8814d">
+                  <rect x="3" y="0" width="1" height="1"/>
+                  <rect x="8" y="0" width="1" height="1"/>
+                  <rect x="2" y="1" width="8" height="5"/>
+                  <rect x="3" y="2" width="2" height="2" fill="#2a1205"/>
+                  <rect x="7" y="2" width="2" height="2" fill="#2a1205"/>
+                  <rect x="1" y="6" width="10" height="1"/>
+                  <rect x="0" y="7" width="2" height="2"/>
+                  <rect x="10" y="7" width="2" height="2"/>
+                  <rect x="3" y="7" width="6" height="3"/>
+                  <rect x="3" y="10" width="2" height="4"/>
+                  <rect x="7" y="10" width="2" height="4"/>
+                </svg>
+                <div class="claude-meta">Sonnet 4.6 · Claude Max<br>~/claude</div>
+              </div>
+              <div class="claude-divider"></div>
+              <div class="claude-right">
+                <div>
+                  <div class="claude-section-hdr">Tips for getting started</div>
+                  <div class="claude-section-body">Run /init to create a CLAUDE.md file with ins…</div>
+                </div>
+                <div class="claude-section-sep"></div>
+                <div>
+                  <div class="claude-section-hdr">Recent activity</div>
+                  <div class="claude-section-body">No recent activity</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="preview"></div>
+      </div>
+    </div>
+
+    <div id="editor">
+      <div id="blocks">
+        <div class="panel-label">Blocks</div>
+        <div id="blocks-list"></div>
+      </div>
+      <div id="settings">
+        <div id="settings-content">
+          <div style="color: var(--text-dim); font-size: 12px;">← Выберите блок для настройки</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="output">
+      <div id="output-header">
+        <div class="panel-label" style="margin:0">Output: statusline.sh</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyScript()">Copy script</button>
+          <button class="btn btn-primary" onclick="copyInstallCmd()">Copy install cmd</button>
+        </div>
+      </div>
+      <div id="output-code"></div>
+    </div>
+  </div>
+
+  <script src="js/ansi.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/bars.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/preview.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/output.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

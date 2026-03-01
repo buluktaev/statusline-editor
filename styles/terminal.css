@@ -1,0 +1,114 @@
+    /* Theme toggle */
+    .theme-toggle { display: flex; gap: 4px; }
+    .theme-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease;
+    }
+    .theme-btn:hover {
+      opacity: 0.7;
+    }
+    #theme-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─── Terminal Window Preview ─── */
+    .term-window {
+      background: #1e1e1e;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    .term-titlebar {
+      background: #2b2b2b;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border-bottom: 1px solid #353535;
+    }
+    .term-dots { display: flex; gap: 8px; align-items: center; }
+    .term-dot { width: 13px; height: 13px; border-radius: 50%; }
+    .dot-red    { background: #ff5f57; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green  { background: #28c841; }
+    .term-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      user-select: none;
+    }
+    .term-body { padding: 20px 24px 16px; }
+    .claude-welcome-box {
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .claude-welcome-hdr {
+      display: flex;
+      align-items: center;
+      padding: 8px 14px 0;
+      color: var(--accent);
+      font-size: 12px;
+    }
+    .claude-welcome-hdr-line { flex: 1; height: 1px; background: var(--accent); opacity: 0.5; }
+    .claude-welcome-hdr-text { padding: 0 8px; white-space: nowrap; }
+    .claude-welcome-inner {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      padding: 16px 0 12px;
+    }
+    .claude-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 24px 12px;
+      gap: 10px;
+    }
+    .claude-greeting { font-size: 14px; font-weight: 700; color: var(--text); }
+    .claude-meta { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; }
+    .claude-divider { background: #3a3a3a; width: 1px; }
+    .claude-right {
+      padding: 8px 24px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .claude-section-hdr { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+    .claude-section-body { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+    .claude-section-sep { height: 1px; background: #3a3a3a; }
+    .term-window #preview {
+      border: none;
+      border-radius: 0;
+      padding: 12px 18px;
+      background: #1e1e1e;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Light theme for entire terminal */
+    .term-window.light-mode { background: #f0ede8; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.08); }
+    .term-window.light-mode .term-titlebar { background: #e0ddd8; border-bottom-color: #ccc; }
+    .term-window.light-mode .term-title { color: #666; }
+    .term-window.light-mode .term-body { background: #f0ede8; }
+    .term-window.light-mode .claude-welcome-box { border-color: var(--accent); }
+    .term-window.light-mode .claude-greeting { color: #222; }
+    .term-window.light-mode .claude-meta { color: #666; }
+    .term-window.light-mode .claude-section-body { color: #666; }
+    .term-window.light-mode .claude-divider { background: #ccc; }
+    .term-window.light-mode .claude-section-sep { background: #ccc; }
+    .term-window.light-mode #preview { background: #f0ede8; }
