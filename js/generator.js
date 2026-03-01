@@ -183,33 +183,27 @@ function generateScript() {
         }
         break;
       case 'rate5h':
-        lines.push('rate5h_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_pct // 0\')');
-        if (block.showBar) {
-          if (block.showReset) {
-            lines.push('rate5h_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_reset // ""\')');
-            lines.push(`printf "\${RATE5H_COLOR}%s %s%%\${RESET}" "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"`);
-            lines.push('[[ -n "$rate5h_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate5h_reset"');
-            lines.push(`printf " "`);
-          } else {
-            lines.push(`printf "\${RATE5H_COLOR}%s %s%%\${RESET} " "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"`);
-          }
+        lines.push('# rate5h: requires rate limit data in JSON input (not available in Claude Code yet)');
+        lines.push('# rate5h_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_pct // 0\')');
+        if (block.showReset) {
+          lines.push('# rate5h_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_reset // ""\')');
+          lines.push('# printf "${RATE5H_COLOR}%s %s%%" "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"');
+          lines.push('# [[ -n "$rate5h_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate5h_reset"');
+          lines.push('# printf " ${RESET}"');
         } else {
-          lines.push(`printf "\${RATE5H_COLOR}%s%%\${RESET} " "$rate5h_pct"`);
+          lines.push('# printf "${RATE5H_COLOR}%s %s%%${RESET} " "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"');
         }
         break;
       case 'rateWeek':
-        lines.push('rate_week_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_pct // 0\')');
-        if (block.showBar) {
-          if (block.showReset) {
-            lines.push('rate_week_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_reset // ""\')');
-            lines.push(`printf "\${RATEWEEK_COLOR}%s %s%%\${RESET}" "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"`);
-            lines.push('[[ -n "$rate_week_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate_week_reset"');
-            lines.push(`printf " "`);
-          } else {
-            lines.push(`printf "\${RATEWEEK_COLOR}%s %s%%\${RESET} " "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"`);
-          }
+        lines.push('# rateWeek: requires rate limit data in JSON input (not available in Claude Code yet)');
+        lines.push('# rate_week_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_pct // 0\')');
+        if (block.showReset) {
+          lines.push('# rate_week_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_reset // ""\')');
+          lines.push('# printf "${RATEWEEK_COLOR}%s %s%%" "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"');
+          lines.push('# [[ -n "$rate_week_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate_week_reset"');
+          lines.push('# printf " ${RESET}"');
         } else {
-          lines.push(`printf "\${RATEWEEK_COLOR}w%s%%\${RESET} " "$rate_week_pct"`);
+          lines.push('# printf "${RATEWEEK_COLOR}W%s %%${RESET} " "$rate_week_pct"');
         }
         break;
       case 'tokens':
