@@ -85,25 +85,6 @@ function renderContextSettings(el, block) {
 }
 
 function renderRateSettings(el, block) {
-  // Превью текущей шкалы
-  const previewSection = document.createElement('div');
-  previewSection.className = 'setting-row';
-  const previewLabel = document.createElement('div');
-  previewLabel.className = 'setting-label';
-  previewLabel.textContent = 'Превью';
-  previewSection.appendChild(previewLabel);
-
-  const previewContainer = document.createElement('div');
-  previewContainer.style.cssText = 'padding: 12px; background: var(--bg3); border-radius: 4px; margin: 4px 0;';
-  const barPreview = renderColoredBar(60, block.style, 8, ansiToCSS(block.color));
-  previewContainer.innerHTML = barPreview;
-  previewSection.appendChild(previewContainer);
-  el.appendChild(previewSection);
-
-  const spacer0 = document.createElement('div');
-  spacer0.style.height = '8px';
-  el.appendChild(spacer0);
-
   el.appendChild(buildRow('Показывать шкалу',
     buildToggle(block.showBar, 'Шкала процентов', v => { block.showBar = v; render();
   })
@@ -135,9 +116,9 @@ function renderRateSettings(el, block) {
   })
   ));
 
-  const spacer1 = document.createElement('div');
-  spacer1.style.height = '8px';
-  el.appendChild(spacer1);
+  const spacerReset = document.createElement('div');
+  spacerReset.style.height = '8px';
+  el.appendChild(spacerReset);
 
   el.appendChild(buildRow('Показывать "до сброса"',
     buildToggle(block.showReset, 'Время до сброса', v => { block.showReset = v; render();
