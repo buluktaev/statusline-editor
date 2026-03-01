@@ -15,6 +15,69 @@ function generateScript() {
   lines.push('percent=$(echo "$JSON_INPUT" | jq -r \'.context_window.used_percentage // 0\')');
   lines.push('cwd=$(echo "$JSON_INPUT" | jq -r \'.cwd // (.workspace.current_dir // "")\')');
   lines.push('');
+
+  const hasRate = state.blocks.some(b => (b.id === 'rate5h' || b.id === 'rateWeek') && b.enabled);
+  if (hasRate) {
+    lines.push('# ── Usage Limits (Anthropic API, cached 2 min) ──');
+    lines.push('CACHE_FILE="$HOME/.claude/.usage-cache.json"');
+    lines.push('');
+    lines.push('fetch_usage() {');
+    lines.push('    local token');
+    lines.push('    token=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null \\');
+    lines.push('        | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[\'claudeAiOauth\'][\'accessToken\'])" 2>/dev/null)');
+    lines.push('    [ -z "$token" ] && return');
+    lines.push('    curl -sf --max-time 5 "https://api.anthropic.com/api/oauth/usage" \\');
+    lines.push('        -H "Authorization: Bearer $token" \\');
+    lines.push('        -H "anthropic-beta: oauth-2025-04-20" \\');
+    lines.push('        -H "Accept: application/json" 2>/dev/null');
+    lines.push('}');
+    lines.push('');
+    lines.push('get_usage() {');
+    lines.push('    local now cache_time=0');
+    lines.push('    now=$(date +%s)');
+    lines.push('    [ -f "$CACHE_FILE" ] && cache_time=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)');
+    lines.push('    if [ $((now - cache_time)) -gt 120 ]; then');
+    lines.push('        local data');
+    lines.push('        data=$(fetch_usage)');
+    lines.push('        if [ -n "$data" ] && echo "$data" | jq -e .five_hour >/dev/null 2>&1; then');
+    lines.push('            umask 077 && echo "$data" > "$CACHE_FILE"');
+    lines.push('        fi');
+    lines.push('    fi');
+    lines.push('    [ -f "$CACHE_FILE" ] && cat "$CACHE_FILE"');
+    lines.push('}');
+    lines.push('');
+    lines.push('usage_data=$(get_usage)');
+    lines.push('five_h_left="" week_left="" time_left="" week_reset_str=""');
+    lines.push('');
+    lines.push('if [ -n "$usage_data" ]; then');
+    lines.push('    five_h_used=$(echo "$usage_data" | jq -r ".five_hour.utilization // 0")');
+    lines.push('    week_used=$(echo "$usage_data"  | jq -r ".seven_day.utilization  // 0")');
+    lines.push('    five_h_reset_at=$(echo "$usage_data" | jq -r ".five_hour.resets_at // \\"\\"")');
+    lines.push('    week_reset_at=$(echo "$usage_data"   | jq -r ".seven_day.resets_at  // \\"\\"")');
+    lines.push('');
+    lines.push('    five_h_left=$(python3 -c "import sys; print(int(100 - float(sys.argv[1])))" "$five_h_used" 2>/dev/null || echo "?")');
+    lines.push('    week_left=$(python3   -c "import sys; print(int(100 - float(sys.argv[1])))" "$week_used"   2>/dev/null || echo "?")');
+    lines.push('');
+    lines.push('    [ -n "$five_h_reset_at" ] && time_left=$(python3 -c "');
+    lines.push('import sys');
+    lines.push('from datetime import datetime, timezone');
+    lines.push('reset = datetime.fromisoformat(sys.argv[1].replace(\"Z\",\"+00:00\"))');
+    lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
+    lines.push('print(f\"{s//3600}h{(s%3600)//60}m\" if s>=3600 else f\"{(s%3600)//60}m\")');
+    lines.push('" "$five_h_reset_at" 2>/dev/null)');
+    lines.push('');
+    lines.push('    [ -n "$week_reset_at" ] && week_reset_str=$(python3 -c "');
+    lines.push('import sys');
+    lines.push('from datetime import datetime, timezone');
+    lines.push('reset = datetime.fromisoformat(sys.argv[1].replace(\"Z\",\"+00:00\"))');
+    lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
+    lines.push('d,h = s//86400, (s%86400)//3600');
+    lines.push('print(f\"{d}d{h}h\" if d>0 else f\"{h}h\")');
+    lines.push('" "$week_reset_at" 2>/dev/null)');
+    lines.push('fi');
+    lines.push('');
+  }
+
   lines.push('RESET="\\033[0m"');
   if (state.globalSepEnabled && state.globalSep) {
     lines.push(`SEP_COLOR="\\033[38;5;${state.globalSepColor}m"`);
@@ -54,7 +117,6 @@ function generateScript() {
   lines.push('');
 
   // Bar function if rate blocks enabled
-  const hasRate = state.blocks.some(b => (b.id === 'rate5h' || b.id === 'rateWeek') && b.enabled);
   if (hasRate) {
     const rateBlock = state.blocks.find(b => (b.id === 'rate5h' || b.id === 'rateWeek') && b.enabled);
     const style = rateBlock ? rateBlock.style : 'classic';
@@ -183,28 +245,30 @@ function generateScript() {
         }
         break;
       case 'rate5h':
-        lines.push('# rate5h: requires rate limit data in JSON input (not available in Claude Code yet)');
-        lines.push('# rate5h_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_pct // 0\')');
-        if (block.showReset) {
-          lines.push('# rate5h_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.five_hour_reset // ""\')');
-          lines.push('# printf "${RATE5H_COLOR}%s %s%%" "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"');
-          lines.push('# [[ -n "$rate5h_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate5h_reset"');
-          lines.push('# printf " ${RESET}"');
+        lines.push('if [ -n "$five_h_left" ]; then');
+        if (block.showBar) {
+          lines.push(`  printf "\${RATE5H_COLOR}%s %s%%\${RESET}" "$(get_rate_bar $((100 - five_h_left)))" "$five_h_left"`);
         } else {
-          lines.push('# printf "${RATE5H_COLOR}%s %s%%${RESET} " "$(get_rate_bar $rate5h_pct)" "$rate5h_pct"');
+          lines.push(`  printf "\${RATE5H_COLOR}h%s%%\${RESET}" "$five_h_left"`);
         }
+        if (block.showReset) {
+          lines.push('  [ -n "$time_left" ] && printf " \\033[38;5;238m%s${RESET}" "$time_left"');
+        }
+        lines.push('  printf " "');
+        lines.push('fi');
         break;
       case 'rateWeek':
-        lines.push('# rateWeek: requires rate limit data in JSON input (not available in Claude Code yet)');
-        lines.push('# rate_week_pct=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_pct // 0\')');
-        if (block.showReset) {
-          lines.push('# rate_week_reset=$(echo "$JSON_INPUT" | jq -r \'.rate_limits.week_reset // ""\')');
-          lines.push('# printf "${RATEWEEK_COLOR}%s %s%%" "$(get_rate_bar $rate_week_pct)" "$rate_week_pct"');
-          lines.push('# [[ -n "$rate_week_reset" ]] && printf " \\033[38;5;238m%s${RESET}" "$rate_week_reset"');
-          lines.push('# printf " ${RESET}"');
+        lines.push('if [ -n "$week_left" ]; then');
+        if (block.showBar) {
+          lines.push(`  printf "\${RATEWEEK_COLOR}%s %s%%\${RESET}" "$(get_rate_bar $((100 - week_left)))" "$week_left"`);
         } else {
-          lines.push('# printf "${RATEWEEK_COLOR}W%s %%${RESET} " "$rate_week_pct"');
+          lines.push(`  printf "\${RATEWEEK_COLOR}w%s%%\${RESET}" "$week_left"`);
         }
+        if (block.showReset) {
+          lines.push('  [ -n "$week_reset_str" ] && printf " \\033[38;5;238m%s${RESET}" "$week_reset_str"');
+        }
+        lines.push('  printf " "');
+        lines.push('fi');
         break;
       case 'tokens':
         lines.push(`printf "\${TOKEN_COLOR}↑%s ↓%s\${RESET} " "$input_k" "$output_k"`);
