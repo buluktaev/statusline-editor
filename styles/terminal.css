@@ -100,4 +100,4 @@
     .term-window.light-mode .claude-section-body { color: #777; }
     .term-window.light-mode .claude-divider { background: #d0cdc8; }
     .term-window.light-mode .claude-section-sep { background: #d0cdc8; }
-    .term-window.light-mode #preview { background: #eeebe6; border-top-color: #d8d5d0; }
+    .term-window.light-mode #preview { background: #f5f2ed; border-top-color: #d8d5d0; }
