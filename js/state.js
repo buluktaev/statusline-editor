@@ -19,7 +19,7 @@ const DEFAULTS = {
       ],
     },
     { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245 },
-    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254, colorClean: 247, colorDirty: 203 },
+    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254 },
   ]
 };
 

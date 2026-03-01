@@ -12,7 +12,7 @@ function generateScript() {
   lines.push('model=$(echo "$JSON_INPUT" | jq -r \'.model.display_name // "Claude"\' | sed \'s/^Claude //\')');
   lines.push('input=$(echo "$JSON_INPUT" | jq -r \'.context_window.total_input_tokens // 0\')');
   lines.push('output=$(echo "$JSON_INPUT" | jq -r \'.context_window.total_output_tokens // 0\')');
-  lines.push('percent=$(echo "$JSON_INPUT" | jq -r \'.context_window.used_percentage // 0\')');
+  lines.push('percent=$(echo "$JSON_INPUT" | jq -r \'.context_window.used_percentage // 0\' | cut -d. -f1)');
   lines.push('cwd=$(echo "$JSON_INPUT" | jq -r \'.cwd // (.workspace.current_dir // "")\')');
   lines.push('');
 
@@ -58,23 +58,23 @@ function generateScript() {
     lines.push('    five_h_left=$(python3 -c "import sys; print(int(100 - float(sys.argv[1])))" "$five_h_used" 2>/dev/null || echo "?")');
     lines.push('    week_left=$(python3   -c "import sys; print(int(100 - float(sys.argv[1])))" "$week_used"   2>/dev/null || echo "?")');
     lines.push('');
-    lines.push('    [ -n "$five_h_reset_at" ] && time_left=$(python3 -c "');
+    lines.push("    [ -n \"$five_h_reset_at\" ] && time_left=$(python3 -c \"");
     lines.push('import sys');
     lines.push('from datetime import datetime, timezone');
-    lines.push('reset = datetime.fromisoformat(sys.argv[1].replace(\"Z\",\"+00:00\"))');
+    lines.push("reset = datetime.fromisoformat(sys.argv[1].replace('Z','+00:00'))");
     lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
     lines.push('h, m = s // 3600, (s % 3600) // 60');
-    lines.push('print(str(h) + \"h\" + str(m) + \"m\" if h > 0 else str(m) + \"m\")');
-    lines.push('" "$five_h_reset_at" 2>/dev/null)');
+    lines.push("print(str(h) + 'h' + str(m) + 'm' if h > 0 else str(m) + 'm')");
+    lines.push("\" \"$five_h_reset_at\" 2>/dev/null)");
     lines.push('');
-    lines.push('    [ -n "$week_reset_at" ] && week_reset_str=$(python3 -c "');
+    lines.push("    [ -n \"$week_reset_at\" ] && week_reset_str=$(python3 -c \"");
     lines.push('import sys');
     lines.push('from datetime import datetime, timezone');
-    lines.push('reset = datetime.fromisoformat(sys.argv[1].replace(\"Z\",\"+00:00\"))');
+    lines.push("reset = datetime.fromisoformat(sys.argv[1].replace('Z','+00:00'))");
     lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
     lines.push('d, h = s // 86400, (s % 86400) // 3600');
-    lines.push('print(str(d) + \"d\" + str(h) + \"h\" if d > 0 else str(h) + \"h\")');
-    lines.push('" "$week_reset_at" 2>/dev/null)');
+    lines.push("print(str(d) + 'd' + str(h) + 'h' if d > 0 else str(h) + 'h')");
+    lines.push("\" \"$week_reset_at\" 2>/dev/null)");
     lines.push('fi');
     lines.push('');
   }
@@ -97,9 +97,11 @@ function generateScript() {
         break;
       case 'rate5h':
         lines.push(`RATE5H_COLOR="\\033[38;5;${block.color}m"`);
+        if (block.showReset) lines.push(`RATE5H_RESET_COLOR="\\033[38;5;${block.colorReset ?? 238}m"`);
         break;
       case 'rateWeek':
         lines.push(`RATEWEEK_COLOR="\\033[38;5;${block.color}m"`);
+        if (block.showReset) lines.push(`RATEWEEK_RESET_COLOR="\\033[38;5;${block.colorReset ?? 238}m"`);
         break;
       case 'tokens':
         lines.push(`TOKEN_COLOR="\\033[38;5;${block.color}m"`);
@@ -108,8 +110,6 @@ function generateScript() {
         lines.push(`DIR_COLOR="\\033[38;5;${block.color}m"`);
         if (block.showGit) {
           lines.push(`GIT_COLOR="\\033[38;5;${block.colorBranch}m"`);
-          lines.push(`GIT_CLEAN="\\033[38;5;${block.colorClean}m"`);
-          lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
         }
         break;
     }
@@ -178,9 +178,6 @@ function generateScript() {
   const gitBlock = state.blocks.find(b => b.id === 'git' && b.enabled);
   if (gitBlock) {
     lines.push('get_git_branch() { git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null; }');
-    lines.push('get_git_status() {');
-    lines.push('  git -C "$1" diff --quiet 2>/dev/null && git -C "$1" diff --cached --quiet 2>/dev/null && echo clean || echo dirty');
-    lines.push('}');
     lines.push('');
   }
 
@@ -192,7 +189,7 @@ function generateScript() {
     } else if (tokBlock.format === '1.2k') {
       lines.push('format_tokens() { printf "%.1fk" "$(echo "scale=1; $1/1000" | bc)"; }');
     } else {
-      lines.push('format_tokens() { echo $(($1 / 1000)); }');
+      lines.push('format_tokens() { echo "$(($1 / 1000))k"; }');
     }
     lines.push('');
   }
@@ -233,16 +230,16 @@ function generateScript() {
     firstBlock = false;
     switch (block.id) {
       case 'model':
-        lines.push(`printf "\${MODEL_COLOR}[%s]\${RESET} " "$model"`);
+        lines.push(`printf "\${MODEL_COLOR}[%s]\${RESET}" "$model"`);
         break;
       case 'context':
         if (block.showContextTokens) {
           lines.push(`CTX_MAX=200000`);
           lines.push(`used_tokens=$((CTX_MAX * percent / 100 / 1000))`);
           lines.push(`max_tokens=$((CTX_MAX / 1000))`);
-          lines.push(`printf "\${ctx_color}%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET} " "$percent" "$used_tokens" "$max_tokens"`);
+          lines.push(`printf "\${ctx_color}%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET}" "$percent" "$used_tokens" "$max_tokens"`);
         } else {
-          lines.push(`printf "\${ctx_color}%s%%\${RESET} " "$percent"`);
+          lines.push(`printf "\${ctx_color}%s%%\${RESET}" "$percent"`);
         }
         break;
       case 'rate5h':
@@ -253,9 +250,8 @@ function generateScript() {
           lines.push(`  printf "\${RATE5H_COLOR}h%s%%\${RESET}" "$five_h_left"`);
         }
         if (block.showReset) {
-          lines.push('  [ -n "$time_left" ] && printf " \\033[38;5;238m%s${RESET}" "$time_left"');
+          lines.push('  [ -n "$time_left" ] && printf " ${RATE5H_RESET_COLOR}%s${RESET}" "$time_left"');
         }
-        lines.push('  printf " "');
         lines.push('fi');
         break;
       case 'rateWeek':
@@ -266,13 +262,12 @@ function generateScript() {
           lines.push(`  printf "\${RATEWEEK_COLOR}w%s%%\${RESET}" "$week_left"`);
         }
         if (block.showReset) {
-          lines.push('  [ -n "$week_reset_str" ] && printf " \\033[38;5;238m%s${RESET}" "$week_reset_str"');
+          lines.push('  [ -n "$week_reset_str" ] && printf " ${RATEWEEK_RESET_COLOR}%s${RESET}" "$week_reset_str"');
         }
-        lines.push('  printf " "');
         lines.push('fi');
         break;
       case 'tokens':
-        lines.push(`printf "\${TOKEN_COLOR}↑%s ↓%s\${RESET} " "$input_k" "$output_k"`);
+        lines.push(`printf "\${TOKEN_COLOR}↑%s ↓%s\${RESET}" "$input_k" "$output_k"`);
         break;
       case 'directory':
         lines.push(`printf "\${DIR_COLOR}%s\${RESET}" "$directory"`);
@@ -280,7 +275,6 @@ function generateScript() {
           lines.push('if [[ -n "$cwd" ]]; then');
           lines.push('  git_branch=$(get_git_branch "$cwd")');
           lines.push('  if [[ -n "$git_branch" ]]; then');
-          lines.push('    git_status=$(get_git_status "$cwd")');
           lines.push('    printf " \${GIT_COLOR}(%s)\${RESET}" "$git_branch"');
 
           lines.push('  fi');
