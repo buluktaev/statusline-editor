@@ -258,7 +258,7 @@ function generateScript() {
       case 'rate5h':
         lines.push('if [ -n "$five_h_left" ]; then');
         if (block.showBar) {
-          lines.push(`  printf "\${RATE5H_COLOR}%s %s%%\${RESET}" "$(get_rate_bar $((100 - five_h_left)))" "$five_h_left"`);
+          lines.push(`  printf "\${RATE5H_COLOR}%s h%s%%\${RESET}" "$(get_rate_bar $((100 - five_h_left)))" "$five_h_left"`);
         } else {
           lines.push(`  printf "\${RATE5H_COLOR}h%s%%\${RESET}" "$five_h_left"`);
         }
@@ -270,7 +270,7 @@ function generateScript() {
       case 'rateWeek':
         lines.push('if [ -n "$week_left" ]; then');
         if (block.showBar) {
-          lines.push(`  printf "\${RATEWEEK_COLOR}%s %s%%\${RESET}" "$(get_rate_bar $((100 - week_left)))" "$week_left"`);
+          lines.push(`  printf "\${RATEWEEK_COLOR}%s w%s%%\${RESET}" "$(get_rate_bar $((100 - week_left)))" "$week_left"`);
         } else {
           lines.push(`  printf "\${RATEWEEK_COLOR}w%s%%\${RESET}" "$week_left"`);
         }

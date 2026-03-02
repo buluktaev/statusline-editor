@@ -54,7 +54,7 @@ function renderPreview() {
         if (block.showBar) {
           const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8, rateColor);
           s += bar + '&nbsp;';
-          s += `<span style="color:${rateColor}">${MOCK.rate5hPercent}%</span>`;
+          s += `<span style="color:${rateColor}">h${MOCK.rate5hPercent}%</span>`;
         } else {
           s += `<span style="color:${rateColor}">h${MOCK.rate5hPercent}%</span>`;
         }
@@ -68,7 +68,7 @@ function renderPreview() {
         if (block.showBar) {
           const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8, rateColor);
           s += bar + '&nbsp;';
-          s += `<span style="color:${rateColor}">${MOCK.rateWeekPercent}%</span>`;
+          s += `<span style="color:${rateColor}">w${MOCK.rateWeekPercent}%</span>`;
         } else {
           s += `<span style="color:${rateColor}">w${MOCK.rateWeekPercent}%</span>`;
         }
