@@ -65,6 +65,8 @@ function generateScript() {
     lines.push('        data=$(fetch_usage)');
     lines.push('        if [ -n "$data" ] && echo "$data" | jq -e .five_hour >/dev/null 2>&1; then');
     lines.push('            umask 077 && echo "$data" > "$CACHE_FILE"');
+    lines.push('        else');
+    lines.push('            touch "$CACHE_FILE" 2>/dev/null');
     lines.push('        fi');
     lines.push('    fi');
     lines.push('    [ -f "$CACHE_FILE" ] && cat "$CACHE_FILE"');
