@@ -18,7 +18,7 @@ function generateScript() {
 
   const hasRate = state.blocks.some(b => (b.id === 'rate5h' || b.id === 'rateWeek') && b.enabled);
   if (hasRate) {
-    lines.push('# ── Usage Limits (Anthropic API, cached 2 min) ──');
+    lines.push('# ── Usage Limits (Anthropic API, cached 5 min) ──');
     lines.push('CACHE_FILE="$HOME/.claude/.usage-cache.json"');
     lines.push('');
     lines.push('fetch_usage() {');
@@ -60,7 +60,7 @@ function generateScript() {
     lines.push('    local now cache_time=0');
     lines.push('    now=$(date +%s)');
     lines.push('    [ -f "$CACHE_FILE" ] && cache_time=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)');
-    lines.push('    if [ $((now - cache_time)) -gt 120 ]; then');
+    lines.push('    if [ $((now - cache_time)) -gt 300 ]; then');
     lines.push('        local data');
     lines.push('        data=$(fetch_usage)');
     lines.push('        if [ -n "$data" ] && echo "$data" | jq -e .five_hour >/dev/null 2>&1; then');
