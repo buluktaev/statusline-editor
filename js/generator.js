@@ -266,17 +266,17 @@ function generateScript() {
           lines.push(`CTX_MAX=200000`);
           lines.push(`used_tokens=$((CTX_MAX * percent / 100 / 1000))`);
           lines.push(`max_tokens=$((CTX_MAX / 1000))`);
-          lines.push(`printf "\${ctx_color}c%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET}" "$percent" "$used_tokens" "$max_tokens"`);
+          lines.push(`printf "\${ctx_color}c:%s%%\${RESET} \${CTX_TOKENS_COLOR}(%sK/%sK)\${RESET}" "$percent" "$used_tokens" "$max_tokens"`);
         } else {
-          lines.push(`printf "\${ctx_color}c%s%%\${RESET}" "$percent"`);
+          lines.push(`printf "\${ctx_color}c:%s%%\${RESET}" "$percent"`);
         }
         break;
       case 'rate5h':
         lines.push('if [ -n "$five_h_left" ]; then');
         if (block.showBar) {
-          lines.push(`  printf "\${RATE5H_COLOR}%s h%s%%\${RESET}" "$(get_rate_bar $((100 - five_h_left)))" "$five_h_left"`);
+          lines.push(`  printf "\${RATE5H_COLOR}%s h:%s%%\${RESET}" "$(get_rate_bar $((100 - five_h_left)))" "$five_h_left"`);
         } else {
-          lines.push(`  printf "\${RATE5H_COLOR}h%s%%\${RESET}" "$five_h_left"`);
+          lines.push(`  printf "\${RATE5H_COLOR}h:%s%%\${RESET}" "$five_h_left"`);
         }
         if (block.showReset) {
           lines.push('  [ -n "$time_left" ] && printf " ${RATE5H_RESET_COLOR}%s${RESET}" "$time_left"');
@@ -286,9 +286,9 @@ function generateScript() {
       case 'rateWeek':
         lines.push('if [ -n "$week_left" ]; then');
         if (block.showBar) {
-          lines.push(`  printf "\${RATEWEEK_COLOR}%s w%s%%\${RESET}" "$(get_rate_bar $((100 - week_left)))" "$week_left"`);
+          lines.push(`  printf "\${RATEWEEK_COLOR}%s w:%s%%\${RESET}" "$(get_rate_bar $((100 - week_left)))" "$week_left"`);
         } else {
-          lines.push(`  printf "\${RATEWEEK_COLOR}w%s%%\${RESET}" "$week_left"`);
+          lines.push(`  printf "\${RATEWEEK_COLOR}w:%s%%\${RESET}" "$week_left"`);
         }
         if (block.showReset) {
           lines.push('  [ -n "$week_reset_str" ] && printf " ${RATEWEEK_RESET_COLOR}%s${RESET}" "$week_reset_str"');

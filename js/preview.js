@@ -39,7 +39,7 @@ function renderPreview() {
         parts.push(`<span style="color:${ansiToCSS(block.color)}">[${MOCK.model}]</span>`);
         break;
       case 'context': {
-        let html = `<span style="color:${getContextColor(MOCK.contextPercent)}"> c${MOCK.contextPercent}%</span>`;
+        let html = `<span style="color:${getContextColor(MOCK.contextPercent)}"> c:${MOCK.contextPercent}%</span>`;
         if (block.showContextTokens) {
           const usedTokens = Math.round(MOCK.contextMaxTokens * MOCK.contextPercent / 100 / 1000) + 'K';
           const maxTokens = Math.round(MOCK.contextMaxTokens / 1000) + 'K';
@@ -54,9 +54,9 @@ function renderPreview() {
         if (block.showBar) {
           const bar = renderColoredBar(MOCK.rate5hPercent, block.style, 8, rateColor);
           s += bar + '&nbsp;';
-          s += `<span style="color:${rateColor}">h${MOCK.rate5hPercent}%</span>`;
+          s += `<span style="color:${rateColor}">h:${MOCK.rate5hPercent}%</span>`;
         } else {
-          s += `<span style="color:${rateColor}">h${MOCK.rate5hPercent}%</span>`;
+          s += `<span style="color:${rateColor}">h:${MOCK.rate5hPercent}%</span>`;
         }
         if (block.showReset) s += `&nbsp;<span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rate5hReset}</span>`;
         parts.push(s);
@@ -68,9 +68,9 @@ function renderPreview() {
         if (block.showBar) {
           const bar = renderColoredBar(MOCK.rateWeekPercent, block.style, 8, rateColor);
           s += bar + '&nbsp;';
-          s += `<span style="color:${rateColor}">w${MOCK.rateWeekPercent}%</span>`;
+          s += `<span style="color:${rateColor}">w:${MOCK.rateWeekPercent}%</span>`;
         } else {
-          s += `<span style="color:${rateColor}">w${MOCK.rateWeekPercent}%</span>`;
+          s += `<span style="color:${rateColor}">w:${MOCK.rateWeekPercent}%</span>`;
         }
         if (block.showReset) s += `&nbsp;<span style="color:${ansiToCSS(block.colorReset ?? 238)}">${MOCK.rateWeekReset}</span>`;
         parts.push(s);
