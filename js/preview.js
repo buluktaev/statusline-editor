@@ -36,7 +36,7 @@ function renderPreview() {
 
     switch (block.id) {
       case 'model':
-        parts.push(`<span style="color:${ansiToCSS(block.color)}">[${MOCK.model}]</span>`);
+        parts.push(`<span style="color:${ansiToCSS(block.color)}">${MOCK.model}</span>`);
         break;
       case 'context': {
         let html = `<span style="color:${getContextColor(MOCK.contextPercent)}"> c:${MOCK.contextPercent}%</span>`;

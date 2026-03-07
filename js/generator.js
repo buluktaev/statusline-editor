@@ -259,7 +259,7 @@ function generateScript() {
     firstBlock = false;
     switch (block.id) {
       case 'model':
-        lines.push(`printf "\${MODEL_COLOR}[%s]\${RESET}" "$model"`);
+        lines.push(`printf "\${MODEL_COLOR}%s\${RESET}" "$model"`);
         break;
       case 'context':
         if (block.showContextTokens) {
