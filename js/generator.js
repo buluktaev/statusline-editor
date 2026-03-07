@@ -89,6 +89,7 @@ function generateScript() {
     lines.push('from datetime import datetime, timezone');
     lines.push("reset = datetime.fromisoformat(sys.argv[1].replace('Z','+00:00'))");
     lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
+    lines.push('if s <= 0: sys.exit(0)');
     lines.push('h, m = s // 3600, (s % 3600) // 60');
     lines.push("print(str(h) + 'h' + str(m) + 'm' if h > 0 else str(m) + 'm')");
     lines.push("\" \"$five_h_reset_at\" 2>/dev/null)");
@@ -98,6 +99,7 @@ function generateScript() {
     lines.push('from datetime import datetime, timezone');
     lines.push("reset = datetime.fromisoformat(sys.argv[1].replace('Z','+00:00'))");
     lines.push('s = int((reset - datetime.now(timezone.utc)).total_seconds())');
+    lines.push('if s <= 0: sys.exit(0)');
     lines.push('d, h = s // 86400, (s % 86400) // 3600');
     lines.push("print(str(d) + 'd' + str(h) + 'h' if d > 0 else str(h) + 'h')");
     lines.push("\" \"$week_reset_at\" 2>/dev/null)");
