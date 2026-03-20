@@ -19,7 +19,7 @@ const DEFAULTS = {
       ],
     },
     { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245 },
-    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254 },
+    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254, colorClean: 82, colorDirty: 203 },
   ]
 };
 
@@ -36,7 +36,11 @@ let state = (() => {
 
 // Migration: ensure all required fields exist
 state.blocks.forEach(block => {
-  if (block.id === 'directory' && !('showGit' in block)) block.showGit = true;
+  if (block.id === 'directory') {
+    if (!('showGit' in block)) block.showGit = true;
+    if (!('colorClean' in block)) block.colorClean = 82;
+    if (!('colorDirty' in block)) block.colorDirty = 203;
+  }
 });
 
 let selectedBlockId = state.blocks.find(b => b.enabled)?.id ?? 'rate5h';
@@ -70,7 +74,4 @@ const MOCK = {
   cwd: '~/proj/app',
   gitBranch: 'main',
   gitStatus: 'dirty',
-  gitAdded: 2,
-  gitModified: 1,
-  gitUntracked: 0,
 };

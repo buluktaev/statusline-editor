@@ -139,6 +139,8 @@ function generateScript() {
         lines.push(`DIR_COLOR="\\033[38;5;${block.color}m"`);
         if (block.showGit) {
           lines.push(`GIT_COLOR="\\033[38;5;${block.colorBranch}m"`);
+          lines.push(`GIT_CLEAN="\\033[38;5;${block.colorClean}m"`);
+          lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
         }
         break;
     }
@@ -204,9 +206,16 @@ function generateScript() {
   lines.push('');
 
   // Git helpers
-  const gitBlock = state.blocks.find(b => b.id === 'git' && b.enabled);
-  if (gitBlock) {
-    lines.push('get_git_branch() { git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null; }');
+  const dirBlockForGit = state.blocks.find(b => b.id === 'directory' && b.enabled && b.showGit);
+  if (dirBlockForGit) {
+    lines.push('get_git_branch() { git -C "$1" --no-optional-locks branch --show-current 2>/dev/null; }');
+    lines.push('get_git_dirty() {');
+    lines.push('  if git -C "$1" --no-optional-locks diff-index --quiet HEAD 2>/dev/null; then');
+    lines.push('    echo "clean"');
+    lines.push('  else');
+    lines.push('    echo "dirty"');
+    lines.push('  fi');
+    lines.push('}');
     lines.push('');
   }
 
@@ -304,8 +313,13 @@ function generateScript() {
           lines.push('if [[ -n "$cwd" ]]; then');
           lines.push('  git_branch=$(get_git_branch "$cwd")');
           lines.push('  if [[ -n "$git_branch" ]]; then');
-          lines.push('    printf " \${GIT_COLOR}(%s)\${RESET}" "$git_branch"');
-
+          lines.push('    git_state=$(get_git_dirty "$cwd")');
+          lines.push('    if [[ "$git_state" == "clean" ]]; then');
+          lines.push('      git_icon="✓"; git_icon_color="${GIT_CLEAN}"');
+          lines.push('    else');
+          lines.push('      git_icon="✗"; git_icon_color="${GIT_DIRTY}"');
+          lines.push('    fi');
+          lines.push('    printf " ${GIT_COLOR}(%s${RESET} ${git_icon_color}%s${RESET}${GIT_COLOR})${RESET}" "$git_branch" "$git_icon"');
           lines.push('  fi');
           lines.push('fi');
         }

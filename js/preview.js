@@ -83,8 +83,12 @@ function renderPreview() {
         let dirHtml = `<span style="color:${ansiToCSS(block.color)}">${MOCK.cwd}</span>`;
         if (block.showGit ?? true) {
           const branchColor = ansiToCSS(block.colorBranch);
-          const statusColor = MOCK.gitStatus === 'clean' ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
-          dirHtml += ` <span style="color:${branchColor}">(${MOCK.gitBranch})</span>`;
+          const isClean = MOCK.gitStatus === 'clean';
+          const statusIcon = isClean ? '✓' : '✗';
+          const statusColor = isClean ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
+          dirHtml += ` <span style="color:${branchColor}">(${MOCK.gitBranch}</span>`;
+          dirHtml += `<span style="color:${statusColor}">&nbsp;${statusIcon}</span>`;
+          dirHtml += `<span style="color:${branchColor}">)</span>`;
         }
         parts.push(dirHtml);
         break;

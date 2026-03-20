@@ -187,7 +187,13 @@ function renderDirectorySettings(el, block) {
       buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render();
   })
     ));
-
-
+    el.appendChild(buildRow('Цвет ✓ (clean)',
+      buildAnsiPalette(block.colorClean ?? 82, v => { block.colorClean = v; render();
+  })
+    ));
+    el.appendChild(buildRow('Цвет ✗ (dirty)',
+      buildAnsiPalette(block.colorDirty ?? 203, v => { block.colorDirty = v; render();
+  })
+    ));
   }
 }
