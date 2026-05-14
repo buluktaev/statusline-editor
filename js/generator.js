@@ -137,11 +137,6 @@ function generateScript() {
         break;
       case 'directory':
         lines.push(`DIR_COLOR="\\033[38;5;${block.color}m"`);
-        if (block.showGit) {
-          lines.push(`GIT_COLOR="\\033[38;5;${block.colorBranch}m"`);
-          lines.push(`GIT_CLEAN="\\033[38;5;${block.colorClean}m"`);
-          lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
-        }
         break;
       case 'git':
         lines.push(`GIT_BR_COLOR="\\033[38;5;${block.colorBranch}m"`);
@@ -213,9 +208,8 @@ function generateScript() {
   lines.push('');
 
   // Git helpers
-  const dirBlockForGit = state.blocks.find(b => b.id === 'directory' && b.enabled && b.showGit);
   const gitStandaloneBlock = state.blocks.find(b => b.id === 'git' && b.enabled);
-  if (dirBlockForGit || gitStandaloneBlock) {
+  if (gitStandaloneBlock) {
     lines.push('get_git_branch() { git -C "$1" --no-optional-locks branch --show-current 2>/dev/null; }');
     lines.push('get_git_dirty() {');
     lines.push('  if git -C "$1" --no-optional-locks diff-index --quiet HEAD 2>/dev/null; then');
@@ -317,20 +311,6 @@ function generateScript() {
         break;
       case 'directory':
         lines.push(`printf "\${DIR_COLOR}%s\${RESET}" "$directory"`);
-        if (block.showGit) {
-          lines.push('if [[ -n "$cwd" ]]; then');
-          lines.push('  git_branch=$(get_git_branch "$cwd")');
-          lines.push('  if [[ -n "$git_branch" ]]; then');
-          lines.push('    git_state=$(get_git_dirty "$cwd")');
-          lines.push('    if [[ "$git_state" == "clean" ]]; then');
-          lines.push('      git_icon="✓"; git_icon_color="${GIT_CLEAN}"');
-          lines.push('    else');
-          lines.push('      git_icon="✗"; git_icon_color="${GIT_DIRTY}"');
-          lines.push('    fi');
-          lines.push('    printf " ${GIT_COLOR}(%s${RESET} ${git_icon_color}%s${RESET}${GIT_COLOR})${RESET}" "$git_branch" "$git_icon"');
-          lines.push('  fi');
-          lines.push('fi');
-        }
         break;
       case 'git':
         lines.push('if [[ -n "$cwd" ]]; then');

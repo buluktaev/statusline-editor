@@ -19,7 +19,7 @@ const DEFAULTS = {
       ],
     },
     { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245 },
-    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254, colorClean: 82, colorDirty: 203 },
+    { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2 },
     { id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203 },
   ]
 };
@@ -36,20 +36,9 @@ let state = (() => {
 })();
 
 // Migration: ensure all required fields exist
-state.blocks.forEach(block => {
-  if (block.id === 'directory') {
-    if (!('showGit' in block)) block.showGit = true;
-    if (!('colorClean' in block)) block.colorClean = 82;
-    if (!('colorDirty' in block)) block.colorDirty = 203;
-  }
-});
 if (!state.blocks.find(b => b.id === 'git')) {
   state.blocks.push({ id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203 });
 }
-// Не допускаем одновременного включения Git-блока и showGit у Directory
-const gitBlock = state.blocks.find(b => b.id === 'git');
-const dirBlock = state.blocks.find(b => b.id === 'directory');
-if (gitBlock?.enabled && dirBlock) dirBlock.showGit = false;
 
 let selectedBlockId = state.blocks.find(b => b.enabled)?.id ?? 'rate5h';
 let previewTheme = 'dark';

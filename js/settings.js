@@ -195,29 +195,4 @@ function renderDirectorySettings(el, block) {
     buildAnsiPalette(block.color, v => { block.color = v; render();
   })
   ));
-
-  // Git section
-  const gitDiv = document.createElement('div');
-  gitDiv.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
-  el.appendChild(gitDiv);
-
-  el.appendChild(buildRow('Git',
-    buildToggle(block.showGit ?? true, 'Git', v => { block.showGit = v; render();
-  })
-  ));
-
-  if (block.showGit ?? true) {
-    el.appendChild(buildRow('Цвет ветки',
-      buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render();
-  })
-    ));
-    el.appendChild(buildRow('Цвет ✓ (clean)',
-      buildAnsiPalette(block.colorClean ?? 82, v => { block.colorClean = v; render();
-  })
-    ));
-    el.appendChild(buildRow('Цвет ✗ (dirty)',
-      buildAnsiPalette(block.colorDirty ?? 203, v => { block.colorDirty = v; render();
-  })
-    ));
-  }
 }
