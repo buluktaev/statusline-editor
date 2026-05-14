@@ -44,25 +44,27 @@ Open `index.html` in any browser — no server or installation needed.
 - Drag to reorder
 - Click a block to edit its colors and options
 
-**3. Copy the script**
+**3. Install the script**
 
-Click **Copy** in the OUTPUT panel — you get a ready bash script.
+Two options in the OUTPUT panel:
 
-**4. Set it up in Claude Code**
+- **Copy install cmd** *(easiest)* — one-liner that creates `~/.claude/statusline.sh`, decodes the script, and runs `chmod +x`. Just paste into your terminal.
+- **Copy script** — raw bash script. Save it to a file (e.g. `~/.claude/statusline.sh`) and `chmod +x` it yourself.
 
-Paste the script to a file, e.g. `~/.claude/statusline.sh`, make it executable:
+**4. Enable in Claude Code**
 
-```bash
-chmod +x ~/.claude/statusline.sh
-```
-
-Then add to your Claude Code settings (`~/.claude/settings.json`):
+Add to your Claude Code settings (`~/.claude/settings.json`):
 
 ```json
 {
-  "statusline": "~/.claude/statusline.sh"
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  }
 }
 ```
+
+Restart Claude Code (or open a new session) — the statusline appears at the bottom of every prompt.
 
 ---
 
