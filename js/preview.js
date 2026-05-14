@@ -80,17 +80,38 @@ function renderPreview() {
         parts.push(`<span style="color:${ansiToCSS(block.color)}">↑${formatTokens(MOCK.inputTokens, block.format)} ↓${formatTokens(MOCK.outputTokens, block.format)}</span>`);
         break;
       case 'directory': {
-        let dirHtml = `<span style="color:${ansiToCSS(block.color)}">${MOCK.cwd}</span>`;
-        if (block.showGit ?? true) {
-          const branchColor = ansiToCSS(block.colorBranch);
-          const isClean = MOCK.gitStatus === 'clean';
-          const statusIcon = isClean ? '✓' : '✗';
-          const statusColor = isClean ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
-          dirHtml += ` <span style="color:${branchColor}">(${MOCK.gitBranch}</span>`;
-          dirHtml += `<span style="color:${statusColor}">&nbsp;${statusIcon}</span>`;
-          dirHtml += `<span style="color:${branchColor}">)</span>`;
+        const segs = MOCK.cwd.replace(/^~\//, '').split('/');
+        let dirDisplay;
+        if (block.depth === 1) {
+          dirDisplay = segs[segs.length - 1];
+        } else if (block.depth === 2) {
+          dirDisplay = segs.length >= 2 ? `~/${segs.slice(-2).join('/')}` : MOCK.cwd;
+        } else {
+          dirDisplay = MOCK.cwd;
         }
-        parts.push(dirHtml);
+        parts.push(`<span style="color:${ansiToCSS(block.color)}">${dirDisplay}</span>`);
+        break;
+      }
+      case 'git': {
+        const branchColor = ansiToCSS(block.colorBranch);
+        const isClean = MOCK.gitStatus === 'clean';
+        const statusIcon = isClean ? '✓' : '✗';
+        const statusColor = isClean ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
+        let gitHtml = `<span style="color:${branchColor}">(${MOCK.gitBranch}</span>`;
+        if (block.showStatus ?? true) {
+          gitHtml += `&nbsp;<span style="color:${statusColor}">${statusIcon}</span>`;
+        }
+        if (block.showCounts ?? true) {
+          const staged = MOCK.gitStaged;
+          const modified = MOCK.gitModified;
+          if (staged > 0 || modified > 0) {
+            gitHtml += `&nbsp;`;
+            if (staged > 0) gitHtml += `<span style="color:${ansiToCSS(block.colorStaged ?? 82)}">+${staged}</span>`;
+            if (modified > 0) gitHtml += `<span style="color:${ansiToCSS(block.colorModified ?? 226)}">${staged > 0 ? '' : ''}~${modified}</span>`;
+          }
+        }
+        gitHtml += `<span style="color:${branchColor}">)</span>`;
+        parts.push(gitHtml);
         break;
       }
     }

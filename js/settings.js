@@ -35,6 +35,7 @@ function renderSettings() {
     case 'rateWeek':   renderRateSettings(content, block); break;
     case 'tokens':     renderTokensSettings(content, block); break;
     case 'directory':  renderDirectorySettings(content, block); break;
+    case 'git':        renderGitBlockSettings(content, block); break;
   }
 }
 
@@ -158,6 +159,46 @@ function renderTokensSettings(el, block) {
   ));
 }
 
+function renderGitBlockSettings(el, block) {
+  el.appendChild(buildRow('Цвет ветки',
+    buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render(); })
+  ));
+
+  const div1 = document.createElement('div');
+  div1.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
+  el.appendChild(div1);
+
+  el.appendChild(buildRow('Показывать статус',
+    buildToggle(block.showStatus ?? true, 'Статус', v => { block.showStatus = v; render(); })
+  ));
+
+  if (block.showStatus ?? true) {
+    el.appendChild(buildRow('Цвет ✓ (clean)',
+      buildAnsiPalette(block.colorClean ?? 82, v => { block.colorClean = v; render(); })
+    ));
+    el.appendChild(buildRow('Цвет ✗ (dirty)',
+      buildAnsiPalette(block.colorDirty ?? 203, v => { block.colorDirty = v; render(); })
+    ));
+  }
+
+  const div2 = document.createElement('div');
+  div2.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
+  el.appendChild(div2);
+
+  el.appendChild(buildRow('Показывать изменения',
+    buildToggle(block.showCounts ?? true, 'Счётчики', v => { block.showCounts = v; render(); })
+  ));
+
+  if (block.showCounts ?? true) {
+    el.appendChild(buildRow('Цвет +staged',
+      buildAnsiPalette(block.colorStaged ?? 82, v => { block.colorStaged = v; render(); })
+    ));
+    el.appendChild(buildRow('Цвет ~modified',
+      buildAnsiPalette(block.colorModified ?? 226, v => { block.colorModified = v; render(); })
+    ));
+  }
+}
+
 function renderDirectorySettings(el, block) {
   el.appendChild(buildRow('Глубина пути',
     buildSegment(
@@ -171,29 +212,4 @@ function renderDirectorySettings(el, block) {
     buildAnsiPalette(block.color, v => { block.color = v; render();
   })
   ));
-
-  // Git section
-  const gitDiv = document.createElement('div');
-  gitDiv.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
-  el.appendChild(gitDiv);
-
-  el.appendChild(buildRow('Git',
-    buildToggle(block.showGit ?? true, 'Git', v => { block.showGit = v; render();
-  })
-  ));
-
-  if (block.showGit ?? true) {
-    el.appendChild(buildRow('Цвет ветки',
-      buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render();
-  })
-    ));
-    el.appendChild(buildRow('Цвет ✓ (clean)',
-      buildAnsiPalette(block.colorClean ?? 82, v => { block.colorClean = v; render();
-  })
-    ));
-    el.appendChild(buildRow('Цвет ✗ (dirty)',
-      buildAnsiPalette(block.colorDirty ?? 203, v => { block.colorDirty = v; render();
-  })
-    ));
-  }
 }
