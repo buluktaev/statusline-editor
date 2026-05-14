@@ -70,7 +70,7 @@ Then add to your Claude Code settings (`~/.claude/settings.json`):
 
 - **bash** — script runs in bash (on Windows: Git Bash / WSL)
 - **jq** — parses JSON from Claude Code hooks
-- **python3** — time calculations for rate reset countdown
+- **Python** — time calculations for rate reset countdown (auto-detects `python3`, `python`, or `py`)
 
 Rate blocks (5h / Week) need one extra dependency depending on your platform:
 
@@ -79,9 +79,15 @@ Rate blocks (5h / Week) need one extra dependency depending on your platform:
 | **macOS** | Keychain | nothing — works out of the box |
 | **Linux** | libsecret (GNOME Keyring / KWallet) | `sudo apt install libsecret-tools` |
 | **Windows** (Git Bash) | Credential Manager | `Install-Module -Name CredentialManager` in PowerShell |
-| **WSL** | same as Linux | `sudo apt install libsecret-tools` |
+| **WSL** | Windows Credential Manager (via `powershell.exe`) | `Install-Module -Name CredentialManager` in Windows PowerShell |
 
-The script auto-detects the OS via `uname -s` and reads the token using the right method.
+The script auto-detects the OS via `uname -s` (and `/proc/version` to distinguish WSL from native Linux) and reads the token using the right method.
+
+### Windows notes
+
+- **Save the script with LF line endings** (not CRLF). Otherwise bash will fail with `bad interpreter: /bin/bash^M`. VS Code: bottom-right status bar → `CRLF` → switch to `LF`. Or run `dos2unix statusline.sh`.
+- **Git Bash performance**: each prompt spawns `powershell.exe` to read the token (~1s startup). The script caches results for 5 minutes, so this hit only happens once every 5 min.
+- **Python on Windows** is usually installed as `python` or `py` — both are detected automatically.
 
 ---
 
