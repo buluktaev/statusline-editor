@@ -144,6 +144,10 @@ function generateScript() {
           lines.push(`GIT_BR_CLEAN="\\033[38;5;${block.colorClean ?? 82}m"`);
           lines.push(`GIT_BR_DIRTY="\\033[38;5;${block.colorDirty ?? 203}m"`);
         }
+        if (block.showCounts ?? true) {
+          lines.push(`GIT_BR_STAGED="\\033[38;5;${block.colorStaged ?? 82}m"`);
+          lines.push(`GIT_BR_MODIFIED="\\033[38;5;${block.colorModified ?? 226}m"`);
+        }
         break;
     }
   });
@@ -323,10 +327,23 @@ function generateScript() {
           lines.push('    else');
           lines.push('      git_icon="✗"; git_icon_color="${GIT_BR_DIRTY}"');
           lines.push('    fi');
-          lines.push('    printf "${GIT_BR_COLOR}(%s${RESET} ${git_icon_color}%s${RESET}${GIT_BR_COLOR})${RESET}" "$git_branch" "$git_icon"');
-        } else {
-          lines.push('    printf "${GIT_BR_COLOR}%s${RESET}" "$git_branch"');
         }
+        if (block.showCounts ?? true) {
+          lines.push('    git_staged=$(git -C "$cwd" --no-optional-locks diff --cached --numstat 2>/dev/null | wc -l | tr -d " ")');
+          lines.push('    git_modified=$(git -C "$cwd" --no-optional-locks diff --numstat 2>/dev/null | wc -l | tr -d " ")');
+        }
+        lines.push('    printf "${GIT_BR_COLOR}(%s${RESET}" "$git_branch"');
+        if (block.showStatus ?? true) {
+          lines.push('    printf " ${git_icon_color}%s${RESET}" "$git_icon"');
+        }
+        if (block.showCounts ?? true) {
+          lines.push('    if [ "$git_staged" -gt 0 ] || [ "$git_modified" -gt 0 ]; then');
+          lines.push('      printf " "');
+          lines.push('      [ "$git_staged" -gt 0 ] && printf "${GIT_BR_STAGED}+%s${RESET}" "$git_staged"');
+          lines.push('      [ "$git_modified" -gt 0 ] && printf "${GIT_BR_MODIFIED}~%s${RESET}" "$git_modified"');
+          lines.push('    fi');
+        }
+        lines.push('    printf "${GIT_BR_COLOR})${RESET}"');
         lines.push('  fi');
         lines.push('fi');
         break;

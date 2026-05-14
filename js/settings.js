@@ -164,9 +164,9 @@ function renderGitBlockSettings(el, block) {
     buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render(); })
   ));
 
-  const divider = document.createElement('div');
-  divider.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
-  el.appendChild(divider);
+  const div1 = document.createElement('div');
+  div1.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
+  el.appendChild(div1);
 
   el.appendChild(buildRow('Показывать статус',
     buildToggle(block.showStatus ?? true, 'Статус', v => { block.showStatus = v; render(); })
@@ -178,6 +178,23 @@ function renderGitBlockSettings(el, block) {
     ));
     el.appendChild(buildRow('Цвет ✗ (dirty)',
       buildAnsiPalette(block.colorDirty ?? 203, v => { block.colorDirty = v; render(); })
+    ));
+  }
+
+  const div2 = document.createElement('div');
+  div2.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
+  el.appendChild(div2);
+
+  el.appendChild(buildRow('Показывать изменения',
+    buildToggle(block.showCounts ?? true, 'Счётчики', v => { block.showCounts = v; render(); })
+  ));
+
+  if (block.showCounts ?? true) {
+    el.appendChild(buildRow('Цвет +staged',
+      buildAnsiPalette(block.colorStaged ?? 82, v => { block.colorStaged = v; render(); })
+    ));
+    el.appendChild(buildRow('Цвет ~modified',
+      buildAnsiPalette(block.colorModified ?? 226, v => { block.colorModified = v; render(); })
     ));
   }
 }
