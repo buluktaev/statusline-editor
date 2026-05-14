@@ -20,6 +20,7 @@ const DEFAULTS = {
     },
     { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245 },
     { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2, showGit: true, colorBranch: 254, colorClean: 82, colorDirty: 203 },
+    { id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203 },
   ]
 };
 
@@ -42,6 +43,9 @@ state.blocks.forEach(block => {
     if (!('colorDirty' in block)) block.colorDirty = 203;
   }
 });
+if (!state.blocks.find(b => b.id === 'git')) {
+  state.blocks.push({ id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203 });
+}
 
 let selectedBlockId = state.blocks.find(b => b.enabled)?.id ?? 'rate5h';
 let previewTheme = 'dark';

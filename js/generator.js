@@ -143,6 +143,13 @@ function generateScript() {
           lines.push(`GIT_DIRTY="\\033[38;5;${block.colorDirty}m"`);
         }
         break;
+      case 'git':
+        lines.push(`GIT_BR_COLOR="\\033[38;5;${block.colorBranch}m"`);
+        if (block.showStatus ?? true) {
+          lines.push(`GIT_BR_CLEAN="\\033[38;5;${block.colorClean ?? 82}m"`);
+          lines.push(`GIT_BR_DIRTY="\\033[38;5;${block.colorDirty ?? 203}m"`);
+        }
+        break;
     }
   });
 
@@ -207,7 +214,8 @@ function generateScript() {
 
   // Git helpers
   const dirBlockForGit = state.blocks.find(b => b.id === 'directory' && b.enabled && b.showGit);
-  if (dirBlockForGit) {
+  const gitStandaloneBlock = state.blocks.find(b => b.id === 'git' && b.enabled);
+  if (dirBlockForGit || gitStandaloneBlock) {
     lines.push('get_git_branch() { git -C "$1" --no-optional-locks branch --show-current 2>/dev/null; }');
     lines.push('get_git_dirty() {');
     lines.push('  if git -C "$1" --no-optional-locks diff-index --quiet HEAD 2>/dev/null; then');
@@ -323,6 +331,24 @@ function generateScript() {
           lines.push('  fi');
           lines.push('fi');
         }
+        break;
+      case 'git':
+        lines.push('if [[ -n "$cwd" ]]; then');
+        lines.push('  git_branch=$(get_git_branch "$cwd")');
+        lines.push('  if [[ -n "$git_branch" ]]; then');
+        if (block.showStatus ?? true) {
+          lines.push('    git_state=$(get_git_dirty "$cwd")');
+          lines.push('    if [[ "$git_state" == "clean" ]]; then');
+          lines.push('      git_icon="✓"; git_icon_color="${GIT_BR_CLEAN}"');
+          lines.push('    else');
+          lines.push('      git_icon="✗"; git_icon_color="${GIT_BR_DIRTY}"');
+          lines.push('    fi');
+          lines.push('    printf "${GIT_BR_COLOR}(%s${RESET} ${git_icon_color}%s${RESET}${GIT_BR_COLOR})${RESET}" "$git_branch" "$git_icon"');
+        } else {
+          lines.push('    printf "${GIT_BR_COLOR}%s${RESET}" "$git_branch"');
+        }
+        lines.push('  fi');
+        lines.push('fi');
         break;
     }
     lines.push(`printf " "`);

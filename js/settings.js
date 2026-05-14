@@ -35,6 +35,7 @@ function renderSettings() {
     case 'rateWeek':   renderRateSettings(content, block); break;
     case 'tokens':     renderTokensSettings(content, block); break;
     case 'directory':  renderDirectorySettings(content, block); break;
+    case 'git':        renderGitBlockSettings(content, block); break;
   }
 }
 
@@ -156,6 +157,29 @@ function renderTokensSettings(el, block) {
     buildAnsiPalette(block.color, v => { block.color = v; render();
   })
   ));
+}
+
+function renderGitBlockSettings(el, block) {
+  el.appendChild(buildRow('Цвет ветки',
+    buildAnsiPalette(block.colorBranch, v => { block.colorBranch = v; render(); })
+  ));
+
+  const divider = document.createElement('div');
+  divider.style.cssText = 'height:1px;background:var(--border);margin:8px 0 2px';
+  el.appendChild(divider);
+
+  el.appendChild(buildRow('Показывать статус',
+    buildToggle(block.showStatus ?? true, 'Статус', v => { block.showStatus = v; render(); })
+  ));
+
+  if (block.showStatus ?? true) {
+    el.appendChild(buildRow('Цвет ✓ (clean)',
+      buildAnsiPalette(block.colorClean ?? 82, v => { block.colorClean = v; render(); })
+    ));
+    el.appendChild(buildRow('Цвет ✗ (dirty)',
+      buildAnsiPalette(block.colorDirty ?? 203, v => { block.colorDirty = v; render(); })
+    ));
+  }
 }
 
 function renderDirectorySettings(el, block) {

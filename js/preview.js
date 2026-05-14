@@ -93,6 +93,19 @@ function renderPreview() {
         parts.push(dirHtml);
         break;
       }
+      case 'git': {
+        const branchColor = ansiToCSS(block.colorBranch);
+        const isClean = MOCK.gitStatus === 'clean';
+        const statusIcon = isClean ? '✓' : '✗';
+        const statusColor = isClean ? ansiToCSS(block.colorClean) : ansiToCSS(block.colorDirty);
+        let gitHtml = `<span style="color:${branchColor}">(${MOCK.gitBranch}</span>`;
+        if (block.showStatus ?? true) {
+          gitHtml += `&nbsp;<span style="color:${statusColor}">${statusIcon}</span>`;
+        }
+        gitHtml += `<span style="color:${branchColor}">)</span>`;
+        parts.push(gitHtml);
+        break;
+      }
     }
   }
 
