@@ -36,6 +36,14 @@ setTheme(previewTheme);  // Initialize theme icon
     item.querySelector('.block-toggle').addEventListener('click', (e) => {
       e.stopPropagation();
       block.enabled = !block.enabled;
+      // Включение Git-блока отключает showGit в Directory и наоборот
+      if (block.id === 'git' && block.enabled) {
+        const dirBlock = state.blocks.find(b => b.id === 'directory');
+        if (dirBlock) dirBlock.showGit = false;
+      } else if (block.id === 'git' && !block.enabled) {
+        const dirBlock = state.blocks.find(b => b.id === 'directory');
+        if (dirBlock) dirBlock.showGit = true;
+      }
       render();
     });
 

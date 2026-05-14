@@ -46,6 +46,10 @@ state.blocks.forEach(block => {
 if (!state.blocks.find(b => b.id === 'git')) {
   state.blocks.push({ id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203 });
 }
+// Не допускаем одновременного включения Git-блока и showGit у Directory
+const gitBlock = state.blocks.find(b => b.id === 'git');
+const dirBlock = state.blocks.find(b => b.id === 'directory');
+if (gitBlock?.enabled && dirBlock) dirBlock.showGit = false;
 
 let selectedBlockId = state.blocks.find(b => b.enabled)?.id ?? 'rate5h';
 let previewTheme = 'dark';
