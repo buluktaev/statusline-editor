@@ -11,17 +11,18 @@ Configure blocks, colors, and thresholds — get a ready-to-use bash script in o
 ## What it looks like
 
 ```
-[Sonnet 4.6]  |  ████████░ 68%  2h14m  |  c30%  |  ↑12.4k ↓3.1k  |  ~/proj/app(main)
+Sonnet 4.6  |  ████████░ h:68% 2h14m  |  w:42%  |  c:30% (60K/200K)  |  ↑12.4k ↓3.1k  |  ~/proj/app  |  (main ✗ +3~2)
 ```
 
 | Segment | Example | What it shows |
 |---|---|---|
-| **Model** | `[Sonnet 4.6]` | Active model name |
-| **Rate 5h** | `████░░░░ 68% 2h14m` | 5-hour usage limit — bar, remaining %, time to reset |
-| **Rate Week** | `███░░░░░ 42% 4d3h` | Weekly usage limit — bar, remaining %, time to reset |
-| **Context %** | `c30%` | Context window fill — changes color at 50% and 80% |
+| **Model** | `Sonnet 4.6` | Active model name |
+| **Rate 5h** | `████░░░░ h:68% 2h14m` | 5-hour usage limit — bar, remaining %, time to reset |
+| **Rate Week** | `███░░░░░ w:42% 4d3h` | Weekly usage limit — bar, remaining %, time to reset |
+| **Context %** | `c:30% (60K/200K)` | Context window fill — changes color at 50% and 80% |
 | **Tokens** | `↑12.4k ↓3.1k` | Input / output tokens in current session |
-| **Directory** | `~/proj/app(main)` | Working directory + git branch |
+| **Directory** | `~/proj/app` | Working directory (configurable depth) |
+| **Git** | `(main ✗ +3~2)` | Branch, clean/dirty status, staged/modified counts |
 
 Colors change automatically:
 
@@ -93,7 +94,7 @@ Claude Code passes a JSON object to the statusline script via stdin on every pro
 - `context_window.total_input_tokens` / `total_output_tokens` — session tokens
 - `cwd` — working directory
 
-Rate data is fetched from `https://api.anthropic.com/api/oauth/usage` and cached locally for 2 minutes to avoid slowing down the prompt.
+Rate data is fetched from `https://api.anthropic.com/api/oauth/usage` and cached locally for 5 minutes to avoid slowing down the prompt and hitting rate limits.
 
 The editor generates the full bash script from your configuration and shows a live preview so you can see the result before copying.
 
