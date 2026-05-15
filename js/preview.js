@@ -104,10 +104,12 @@ function renderPreview() {
         if (block.showCounts ?? true) {
           const staged = MOCK.gitStaged;
           const modified = MOCK.gitModified;
-          if (staged > 0 || modified > 0) {
+          const untracked = MOCK.gitUntracked;
+          if (staged > 0 || modified > 0 || untracked > 0) {
             gitHtml += `&nbsp;`;
             if (staged > 0) gitHtml += `<span style="color:${ansiToCSS(block.colorStaged ?? 82)}">+${staged}</span>`;
             if (modified > 0) gitHtml += `<span style="color:${ansiToCSS(block.colorModified ?? 226)}">${staged > 0 ? '' : ''}~${modified}</span>`;
+            if (untracked > 0) gitHtml += `<span style="color:${ansiToCSS(block.colorUntracked ?? 245)}">?${untracked}</span>`;
           }
         }
         gitHtml += `<span style="color:${branchColor}">)</span>`;

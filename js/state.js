@@ -20,7 +20,7 @@ const DEFAULTS = {
     },
     { id: 'tokens', name: 'Tokens', enabled: true, format: '1k', color: 245 },
     { id: 'directory', name: 'Directory', enabled: true, color: 247, depth: 2 },
-    { id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203, showCounts: true, colorStaged: 82, colorModified: 226 },
+    { id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203, showCounts: true, colorStaged: 82, colorModified: 226, colorUntracked: 245 },
   ]
 };
 
@@ -37,13 +37,14 @@ let state = (() => {
 
 // Migration: ensure all required fields exist
 if (!state.blocks.find(b => b.id === 'git')) {
-  state.blocks.push({ id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203, showCounts: true, colorStaged: 82, colorModified: 226 });
+  state.blocks.push({ id: 'git', name: 'Git', enabled: false, colorBranch: 254, showStatus: true, colorClean: 82, colorDirty: 203, showCounts: true, colorStaged: 82, colorModified: 226, colorUntracked: 245 });
 }
 state.blocks.forEach(block => {
   if (block.id === 'git') {
     if (!('showCounts' in block)) block.showCounts = true;
     if (!('colorStaged' in block)) block.colorStaged = 82;
     if (!('colorModified' in block)) block.colorModified = 226;
+    if (!('colorUntracked' in block)) block.colorUntracked = 245;
   }
 });
 
@@ -80,4 +81,5 @@ const MOCK = {
   gitStatus: 'dirty',
   gitStaged: 3,
   gitModified: 2,
+  gitUntracked: 4,
 };
