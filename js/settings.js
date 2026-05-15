@@ -196,6 +196,9 @@ function renderGitBlockSettings(el, block) {
     el.appendChild(buildRow('Цвет ~modified',
       buildAnsiPalette(block.colorModified ?? 226, v => { block.colorModified = v; render(); })
     ));
+    el.appendChild(buildRow('Цвет ?untracked',
+      buildAnsiPalette(block.colorUntracked ?? 245, v => { block.colorUntracked = v; render(); })
+    ));
   }
 }
 
